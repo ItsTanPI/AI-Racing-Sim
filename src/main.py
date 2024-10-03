@@ -11,10 +11,8 @@ WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
 rb = phy.RigidBody2D(VM.Vector2(400, 300), VM.Vector2(30, 100))
-
 while True:
-    rb.velocity = VM.Vector2(200, -200)
-    rb.Update(0.02)
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -22,8 +20,11 @@ while True:
             sys.exit()
 
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                rb.rotation += 0 
             if event.key == pygame.K_SPACE:
-                rb.rotation += 10  # Increment the rotation by 10 degrees
+                rb.addForce(VM.Vector2(0, -5000))
+    rb.Update(0.02)
 
     screen.fill(WHITE)
     
