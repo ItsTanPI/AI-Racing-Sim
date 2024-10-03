@@ -30,6 +30,7 @@ class Vector2:
 
     def normalize(self):
         mag = self.magnitude()
+        if(mag == 0): return Vector2(0, 0)  
         return Vector2(self.x / mag, self.y / mag)
     
     def rotate(self,center, deg):
