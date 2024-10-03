@@ -38,4 +38,6 @@ class Vector2:
         
         self.x = new_x
         self.y = new_y
- 
+
+    def __repr__(self):
+        return f"Vector2({self.x}, {self.y})"   

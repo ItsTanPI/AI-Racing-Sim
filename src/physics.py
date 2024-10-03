@@ -4,25 +4,36 @@ class RigidBody2D:
 
     Bodies = list()
 
-    def __init__(self, position, dimensions):
+    def __init__(self, position, dimensions, mass = 1):
         
-        self.position = position                    #Vector2
-        self.rotation = 0                           #deg
-        self.dimensions = dimensions                #Vector2
+        self.position = position                    
+        self.rotation = 0                           
+        self.dimensions = dimensions                
 
-        self.velocity = VM.Vector2(0, 0)            #Vector2
-        self.accleration = VM.Vector2(0, 0)         #Vector2 
-        self.drag = 0.0                             #float
+        self.mass = mass
+
+        self.gravity = VM.Vector2(0, 100)
+        self.force = VM.Vector2(0, 0)
+        self.velocity = VM.Vector2(0, 0)            
+        self.accleration = VM.Vector2(0, 0)          
+        self.drag = 0.0                             
 
         if self not in self.Bodies:
             self.Bodies.append(self)
+
+
+    def addForce(self, force):
+        self.force += force
 
     def Update(self, dt):
         self.UpdatePos(dt)
     
     def UpdatePos(self, dt):
+        self.accleration = self.force *(1/self.mass)
+        self.accleration += self.gravity
         self.velocity += (self.accleration * dt)
         self.position += (self.velocity * (1 - self.drag) * dt )
+        self.force = VM.Vector2(0, 0)
 
     def findVertices(self):
         xx = self.position.x
