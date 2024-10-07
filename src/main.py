@@ -43,11 +43,11 @@ while True:
 
     # Move forward (apply force upward) with W or Up Arrow
     if keys[pygame.K_w] or keys[pygame.K_UP]:
-        forward_force = VM.Vector2(0, -100)  # Add a force upward
+        forward_force = VM.Vector2(0, -500)  # Add a force upward
         rb.addForce(forward_force)
 
     if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-        forward_force = VM.Vector2(0, 100)  # Add a force upward
+        forward_force = VM.Vector2(0, 500)  # Add a force upward
         rb.addForce(forward_force)
 
     rb.Update(0.02)

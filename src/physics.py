@@ -16,7 +16,7 @@ class RigidBody2D:
         self.force = VM.Vector2(0, 0)
         self.velocity = VM.Vector2(0, 0)            
         self.accleration = VM.Vector2(0, 0)          
-        self.drag = 0.01
+        self.drag = 0.05
 
         if self not in self.Bodies:
             self.Bodies.append(self)
