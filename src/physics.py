@@ -11,12 +11,16 @@ class RigidBody2D:
         self.dimensions = dimensions                
 
         self.mass = mass
-
         self.gravity = VM.Vector2(0, 0)
         self.force = VM.Vector2(0, 0)
         self.velocity = VM.Vector2(0, 0)            
         self.accleration = VM.Vector2(0, 0)          
         self.drag = 0.05
+        self.dir = VM.Vector2(0, 0)
+
+        self.dir2 = VM.Vector2(0, 0)
+
+
 
         if self not in self.Bodies:
             self.Bodies.append(self)
@@ -24,13 +28,13 @@ class RigidBody2D:
 
     def addForce(self, force):
         self.force += force
-        #self.force.rotate(VM.Vector2(0,0), self.rotation)
-        #print(self.force)
 
-    def Update(self, dt):
+
+    def PhyUpdate(self, dt):
         self.UpdatePos(dt)
     
     def UpdatePos(self, dt):
+        self.rotation %= 360
         self.force += self.gravity * self.mass        
         self.accleration = self.force *(1/self.mass)
 
@@ -43,6 +47,7 @@ class RigidBody2D:
         nor.rotate(VM.Vector2(0, 0), self.rotation)
         nor *= mag
 
+
         self.position += (nor * dt )
         self.force = VM.Vector2(0, 0)
 
@@ -53,6 +58,11 @@ class RigidBody2D:
 
         ww = self.dimensions.x
         hh = self.dimensions.y
+
+        self.dir = VM.Vector2(xx, yy-hh/3)
+        self.dir.rotate(self.position, self.rotation)
+
+        self.dir2 = VM.Vector2(self.dir.x, self.dir.y-hh/3)
 
         v = [
             VM.Vector2(xx-ww/2, yy-hh/2),

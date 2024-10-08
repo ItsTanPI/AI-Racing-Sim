@@ -2,6 +2,9 @@ import pygame
 import sys
 import vectorMath as VM
 import physics as phy
+import car
+
+import os
 
 SrcWidth = 800
 SrcHeight = 600
@@ -13,62 +16,22 @@ clock = pygame.time.Clock()
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 
-rb = phy.RigidBody2D(VM.Vector2(400, 300), VM.Vector2(30, 100))
-#rb.addForce(VM.Vector2(500, -5000))
+Car = car.Car(VM.Vector2(400, 300), VM.Vector2(30, 100))
 
 while True:
-    print(rb.velocity.magnitude())
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-        
-
-
-        if event.type == pygame.KEYDOWN:
-            #if event.key == pygame.K_RETURN:
-                #rb.rotation += 15 
-                #rb.addForce(VM.Vector2(1000, 0))
-
-            if event.key == pygame.K_SPACE:
-                pass
-                #rb.addForce(VM.Vector2(0, -5000))
-    
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-        rb.rotation += 90 *rb.velocity.magnitude()/200 * (clock.get_time() / 1000) *  (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)# Rotate clockwise
-
-    # Rotate counterclockwise with A or Left Arrow
-    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-        rb.rotation -= 90 *(rb.velocity.magnitude()/200) * (clock.get_time() / 1000) *(-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)  # Rotate counterclockwise
-
-    # Move forward (apply force upward) with W or Up Arrow
-    if keys[pygame.K_w] or keys[pygame.K_UP]:
-        forward_force = VM.Vector2(0, -500)  # Add a force upward
-        rb.addForce(forward_force)
-
-    if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-        forward_force = VM.Vector2(0, 500)  # Add a force upward
-        rb.addForce(forward_force)
-    
-    if keys[pygame.K_f]:
-        SrcHeight = 1080
-        SrcWidth = 1920
-        screen = pygame.display.set_mode((SrcWidth, SrcHeight))
-
-    rb.Update(0.02)
-
     screen.fill(WHITE)
-    
 
-    vertices = rb.findVertices()
 
-    points = [(int(v.x), int(v.y)) for v in vertices]
+    Car.Update(0.016)
+    Car.Draw(screen)
+    Car.debugDraw(screen)
+    print(f"Speed: {Car.velocity.magnitude():5.1f}, RPM {Car.CurRPM: 5.0f} SteerAngle {Car.steerAngle: 5.0f}" )
 
-    pygame.draw.polygon(screen, RED, points)
 
     pygame.display.flip()
-
     clock.tick(60)
