@@ -27,8 +27,6 @@ class RigidBody2D:
         #self.force.rotate(VM.Vector2(0,0), self.rotation)
         #print(self.force)
 
-
-
     def Update(self, dt):
         self.UpdatePos(dt)
     
@@ -48,6 +46,7 @@ class RigidBody2D:
         self.position += (nor * dt )
         self.force = VM.Vector2(0, 0)
 
+
     def findVertices(self):
         xx = self.position.x
         yy = self.position.y
@@ -66,5 +65,3 @@ class RigidBody2D:
             v[i].rotate(self.position, self.rotation)
             
         return v
-    
-
