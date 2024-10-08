@@ -1,5 +1,18 @@
 import math
 
+def Clamp(value):
+    if (value < 0):
+        return 0
+    elif(value > 1):
+        return 1
+    else:
+        return value
+
+
+def Lerp(a, b, t): 
+    value =  a + (b - a) * Clamp(t)
+    return value
+
 class Vector2:
     def __init__(self, x=0, y=0):
         self.x = x
