@@ -41,4 +41,7 @@ class Vector2:
         self.y = new_y
 
     def __repr__(self):
-        return f"Vector2({self.x}, {self.y})"   
+        return f"Vector2({self.x}, {self.y})" 
+
+    def rTuple(self):
+        return (self.x,self.y)
