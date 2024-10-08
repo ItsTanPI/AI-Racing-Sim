@@ -3,8 +3,11 @@ import sys
 import vectorMath as VM
 import physics as phy
 
+SrcWidth = 800
+SrcHeight = 600
+
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((SrcWidth, SrcHeight))
 clock = pygame.time.Clock()
 
 WHITE = (255, 255, 255)
@@ -49,6 +52,11 @@ while True:
     if keys[pygame.K_s] or keys[pygame.K_DOWN]:
         forward_force = VM.Vector2(0, 500)  # Add a force upward
         rb.addForce(forward_force)
+    
+    if keys[pygame.K_f]:
+        SrcHeight = 1080
+        SrcWidth = 1920
+        screen = pygame.display.set_mode((SrcWidth, SrcHeight))
 
     rb.Update(0.02)
 
