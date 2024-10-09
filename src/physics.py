@@ -20,14 +20,15 @@ class RigidBody2D:
 
         self.dir2 = VM.Vector2(0, 0)
 
-
-
         if self not in self.Bodies:
             self.Bodies.append(self)
 
 
     def addForce(self, force):
         self.force += force
+
+    def addTraction(self, traction):
+        self.traction += traction
 
 
     def PhyUpdate(self, dt):
@@ -47,10 +48,8 @@ class RigidBody2D:
         nor.rotate(VM.Vector2(0, 0), self.rotation)
         nor *= mag
 
-
-        self.position += (nor * dt )
+        self.position += (nor * dt) 
         self.force = VM.Vector2(0, 0)
-
 
     def findVertices(self):
         xx = self.position.x
@@ -58,11 +57,6 @@ class RigidBody2D:
 
         ww = self.dimensions.x
         hh = self.dimensions.y
-
-        self.dir = VM.Vector2(xx, yy-hh/3)
-        self.dir.rotate(self.position, self.rotation)
-
-        self.dir2 = VM.Vector2(self.dir.x, self.dir.y-hh/3)
 
         v = [
             VM.Vector2(xx-ww/2, yy-hh/2),
