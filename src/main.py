@@ -1,23 +1,21 @@
 import pygame
 import sys
 import vectorMath as VM
-import physics as phy
 import car
 
-import os
 
-SrcWidth = 800
-SrcHeight = 600
+SrcWidth = 1920
+SrcHeight = 1080
 
 pygame.init()
 screen = pygame.display.set_mode((SrcWidth, SrcHeight))
-clock = pygame.time.Clock()
+clock = pygame.time.Clock()  
 
-WHITE = (255, 255, 255)
+WHITE = (100, 100, 100)
 RED = (255, 0, 0)
 
-Car = car.Car(VM.Vector2(400, 300), VM.Vector2(30, 100))
-
+Car = car.Car(VM.Vector2(400, 300), VM.Vector2(30, 100))    #30, 100    45, 150
+ 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -26,11 +24,10 @@ while True:
 
     screen.fill(WHITE)
 
-
     Car.Update(0.016)
     Car.Draw(screen)
     Car.debugDraw(screen)
-    print(f"Speed: {Car.velocity.magnitude():5.1f}, RPM {Car.CurRPM: 5.0f} SteerAngle {Car.steerAngle: 5.0f}" )
+    #print(f"Speed: {Car.velocity.magnitude():5.1f}, RPM {Car.CurRPM: 5.0f}, Steer Angle {Car.steerAngle: 5.0f}, Body Angle {Car.rotation: 5.0f}")
 
 
     pygame.display.flip()
