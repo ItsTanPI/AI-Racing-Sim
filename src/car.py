@@ -21,6 +21,7 @@ class Car(phy.RigidBody2D):
 
         self.CurRPM = 0
         self.MaxRPM =1500
+        self.gear = 1
 
 
         self.DriftMomentum = VM.Vector2()
@@ -48,7 +49,7 @@ class Car(phy.RigidBody2D):
 
     def Update(self, dt):
         self.steerAngle %= 360
-        self.handleInput(dt)
+        #self.handleInput(dt)
         #self.applyDrift(0)
         self.TireUpdate()
         self.PhyUpdate(dt)
@@ -78,7 +79,7 @@ class Car(phy.RigidBody2D):
 
         velocity = VM.Vector2()
 
-        d = 50 if (self.velocity.magnitude() < 300) else (20 if (self.velocity.magnitude() < 370) else 3)
+        d = 50 if (self.velocity.magnitude() < 320) else (20 if (self.velocity.magnitude() < 340) else 3)
         self.fac = VM.Lerp(self.fac, d, 3* dt)
 
         velocity += (accleration * dt)*self.velocity.magnitude() * (1/ self.fac)
@@ -89,38 +90,96 @@ class Car(phy.RigidBody2D):
     def handleInput(self, dt):
         keys = pygame.key.get_pressed()
         self.drag = 0.05
-
-        if (keys[pygame.K_s] or keys[pygame.K_DOWN]) or (keys[pygame.K_w] or keys[pygame.K_UP]) and (not keys[pygame.K_SPACE]):
-            if keys[pygame.K_w] or keys[pygame.K_UP] and self.velocity.magnitude() < self.MaxSpeed:
-                self.acclerate(-1, dt)
-            if keys[pygame.K_s] or keys[pygame.K_DOWN]:
+        if (keys[pygame.K_e]):
+            self.gear = 2
+        if (keys[pygame.K_q]):
+            self.gear = 1
+        if ((keys[pygame.K_s] or keys[pygame.K_DOWN]) or (keys[pygame.K_w] or keys[pygame.K_UP]) and (not keys[pygame.K_SPACE])):
+            if keys[pygame.K_s] or keys[pygame.K_DOWN]: # reverse Gear
                 if self.velocity.magnitude() < self.MaxSpeed - 50:
                     self.acclerate(1, dt)
-        elif(keys[pygame.K_SPACE]):
+            elif  (keys[pygame.K_w] or keys[pygame.K_UP]):# if W pressed with/without up arrow its 2nd gear, if arrow alone is pressed it is second gear
+                if self.gear == 1 and (self.velocity.magnitude() < self.MaxSpeed ): 
+                    self.acclerate(-1, dt)
+                if self.gear == 2:
+                    self.acclerate(-1, dt)
+                
+        elif(keys[pygame.K_SPACE]): # break
             self.drag = 0.055
             self.redRPM(dt, 3)
-        else:
+        else:  
             self.drag = 0.05
             self.redRPM(dt, 1)
 
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT] or keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d] or keys[pygame.K_RIGHT] or keys[pygame.K_a] or keys[pygame.K_LEFT]: 
+            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:# turn right
                 self.rotation += 120 * (self.velocity.magnitude() / 300) * dt * (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)
                 self.steer(1, dt)
-                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):#and (keys[pygame.K_SPACE]
+                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):
                     self.applyDrift(1, dt)
                 else:
                     self.applyDrift(78, dt)
 
 
-            if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            if keys[pygame.K_a] or keys[pygame.K_LEFT]:# turn left
                 self.rotation -= 120 * (self.velocity.magnitude() / 300) * dt * (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)
                 self.steer(-1, dt)
-                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):#and (keys[pygame.K_SPACE])):
+                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):
                     self.applyDrift(-1, dt)
                 else:
                     self.applyDrift(78, dt)
         else:
+            self.antisteer(dt)
+            self.applyDrift(78, dt)
+
+
+    def handleAIInput(self, dt, throttle, brake, steer, reverse_gear, gear):
+        """
+        Handles car input controlled by an AI.
+
+        Arguments:
+        - dt: Time delta
+        - throttle: Value (-1 to 1) for forward/backward acceleration
+        - brake: Boolean, True if braking
+        - steer: Value (-1 to 1) for steering direction (-1 for left, 1 for right)
+        - reverse_gear: Boolean, True if in reverse gear
+        - drift_control: Boolean, True if AI applies drift control
+        - gear: 1 for first gear (normal speed), 2 for second gear (higher speed)
+        """
+
+        self.drag = 0.05
+        self.gear = gear
+        # Acceleration and Braking Logic
+        if throttle != 0 and not brake:
+            if reverse_gear:  # Reverse gear
+                if self.velocity.magnitude() < self.MaxSpeed - 50:
+                    self.acclerate(1, dt)
+            else:  # Forward gear
+                if gear == 1 and self.velocity.magnitude() < self.MaxSpeed:  # First gear
+                    self.acclerate(-1, dt)
+                elif gear == 2:  # Second gear
+                    self.acclerate(-1, dt)  # Slightly slower acceleration for second gear
+        elif brake:  # Braking
+            self.drag = 0.055
+            self.redRPM(dt, 3)
+        else:  # Coasting
+            self.drag = 0.05
+            self.redRPM(dt, 1)
+
+        # Steering Logic
+        if steer != 0:
+            # Turn right if steer > 0, left if steer < 0
+            steer_direction = 1 if steer > 0 else -1
+            self.rotation += steer_direction * 120 * (self.velocity.magnitude() / 300) * dt * (-1 if reverse_gear else 1)
+            self.steer(steer_direction, dt)
+
+            # Apply drift control
+            if not reverse_gear:
+                self.applyDrift(steer_direction, dt)
+            else:
+                self.applyDrift(78, dt)
+        else:
+            # No steering input, handle anti-steering and drift adjustment
             self.antisteer(dt)
             self.applyDrift(78, dt)
 
@@ -167,7 +226,7 @@ class Car(phy.RigidBody2D):
 
     def debugDraw(self, screen):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Gear: {self.gear}", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10))
 
         vertices = self.findVertices()
@@ -182,6 +241,9 @@ class Car(phy.RigidBody2D):
         self.dir2.rotate(self.dir, self.steerAngle + self.rotation)
 
         pygame.draw.line(screen, (0, 0, 0), (self.dir.x, self.dir.y), (self.dir2.x, self.dir2.y), 2)
+
+
+        #print(f"Speed: {self.velocity.magnitude():5.1f}, RPM {self.CurRPM: 5.0f}, Steer Angle {self.steerAngle: 5.0f}, Body Angle {self.rotation: 5.0f}")
 
 
     def re(self):
