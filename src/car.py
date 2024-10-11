@@ -155,9 +155,9 @@ class Car(phy.RigidBody2D):
                 if self.velocity.magnitude() < self.MaxSpeed - 50:
                     self.acclerate(1, dt)
             else:  # Forward gear
-                if gear == 1 and self.velocity.magnitude() < self.MaxSpeed:  # First gear
+                if (gear == 1 or gear == 0) and self.velocity.magnitude() < self.MaxSpeed:  # First gear
                     self.acclerate(-1, dt)
-                elif gear == 2:  # Second gear
+                elif (gear == 2 and gear != 0):  # Second gear
                     self.acclerate(-1, dt)  # Slightly slower acceleration for second gear
         elif brake:  # Braking
             self.drag = 0.055
@@ -224,9 +224,9 @@ class Car(phy.RigidBody2D):
         screen.blit(rotated_image, new_rect.topleft)
 
 
-    def debugDraw(self, screen):
+    def debugDraw(self, screen, reward = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Gear: {self.gear}", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Gear: {self.gear} reward: {reward:5}", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10))
 
         vertices = self.findVertices()
