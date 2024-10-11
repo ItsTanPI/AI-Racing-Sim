@@ -7,7 +7,7 @@ class RigidBody2D:
     def __init__(self, position, dimensions, mass = 1):
         
         self.position = position                    
-        self.rotation = 0                           
+        self.rotation = 90                           
         self.dimensions = dimensions                
 
         self.mass = mass

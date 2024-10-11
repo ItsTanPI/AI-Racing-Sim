@@ -24,6 +24,8 @@ while True:
 
     screen.fill(WHITE)
 
+    Car.handleInput(0.016)
+    #Car.handleAIInput(0.016, 1, False, -1, False, 2)
     Car.Update(0.016)
     Car.Draw(screen)
     Car.debugDraw(screen)
