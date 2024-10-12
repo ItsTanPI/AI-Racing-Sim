@@ -145,8 +145,9 @@ class LilachV2(gym.Env):
 
         self.action_space = gym.spaces.MultiDiscrete([3, 2, 3, 2])  
         self.observation_space = gym.spaces.Box(
-                low=np.array([-np.inf, -np.inf, 0, 0, 0, -np.inf, -np.inf, 0, 0], dtype=np.float16),  
-                high=np.array([np.inf, np.inf, 360, np.inf, np.inf, np.inf, np.inf, np.inf, 360], dtype=np.float16), 
+                                #x        y     ro    vel   rpm   steer      x        y     dist    ca
+                low=np.array([-np.inf, -np.inf, 0,     0,    0,     0,    -np.inf, -np.inf,  0,      0], dtype=np.float16),  
+                high=np.array([np.inf, np.inf, 360, np.inf, np.inf, 360 , np.inf, np.inf, np.inf, 360], dtype=np.float16), 
                 dtype=np.float16
             )
 
@@ -188,8 +189,8 @@ class LilachV2(gym.Env):
         return obs, reward, done, truncated, {}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(random.randint(100, 1800), 300)
-        self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
+        self.target_point = VM.Vector2(random.randint(500, 700), 300)
+        #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.distance = (self.car.position - self.target_point).magnitude()
         
         self.prev_distance = self.distance 
@@ -205,6 +206,7 @@ class LilachV2(gym.Env):
         vel_mag = self.car.velocity.magnitude()
         rotation = self.car.rotation
         rpm = self.car.CurRPM
+        steerangle = self.car.steerAngle
 
         distance_to_target = (self.car.position - self.target_point).magnitude()
         vec1 = (self.target_point-self.car.position)
@@ -217,6 +219,7 @@ class LilachV2(gym.Env):
             rotation,       
             vel_mag,        
             rpm,
+            steerangle,
 
             self.target_point.x,
             self.target_point.y,
@@ -227,29 +230,60 @@ class LilachV2(gym.Env):
     def calculate_reward(self):
         Reward = 0
 
-        distance = (self.car.position - self.target_point).magnitude()
+        distanceVect = (self.target_point - self.car.position)
+        distance = distanceVect.magnitude()
+        deltaDistance = self.prev_distance - distance
 
-        if distance < self.prev_distance:
-            Reward += self.prev_distance - distance
-            Reward += self.car.velocity.magnitude()/10
+        velocityVect = self.car.velocity
+        carNormal = (self.car.dir - self.car.position)
+        angle = distanceVect.angle_between(carNormal)
+
+        if deltaDistance > 0:
+            distcoeff = 10  
         else:
-            Reward -= distance
-        
-        self.prev_distance = distance
-        if self.check_done():
-            Reward += 1000
+            distcoeff = 5  
 
-        print(int(Reward))
+        self.prev_distance = distance
+
+        is_target_ahead = angle <= 90 
+
+        # Speed influence
+        speed_reward = max(0, velocityVect.magnitude())  
+        if is_target_ahead:
+            if velocityVect.y < 0:
+                Reward += ((speed_reward/5) * distcoeff)/10  
+            else:
+                Reward -= ((speed_reward/10) * distcoeff) 
+        else:
+            if velocityVect.y > 0:
+                Reward += ((speed_reward/5) * distcoeff)/10
+            else:
+                Reward -= ((speed_reward/10) * distcoeff)
+
+        if angle <= 30:
+            Reward += (30 - angle) 
+        else:
+            Reward -= 50  
+
+        if self.check_done():
+            Reward += 500 
+
+
         return int(Reward)
-    
+
     def screenNow(self, screen):
         self.screen = screen    
 
     def render(self, reward, mode='human'):
-        self.screen.fill((255, 255, 255))
+        self.screen.fill((100, 100, 100))
 
         pygame.draw.line(self.screen, (0, 255, 0), (self.car.position.x, self.car.position.y), (self.target_point.x, self.target_point.y), 2)
         pygame.draw.circle(self.screen, (255, 0, 0), (int(self.target_point.x), int(self.target_point.y)), 10)
+        distanceVect = (self.target_point - self.car.position)
+        velocityVect = self.car.velocity
+        carNormal = (self.car.dir - self.car.position)
+        angle = distanceVect.angle_between(carNormal)
+
 
         self.car.Draw(self.screen)
         self.car.debugDraw(self.screen, reward)
@@ -258,7 +292,7 @@ class LilachV2(gym.Env):
 
     def check_done(self):
         distance = (self.car.position - self.target_point).magnitude()
-        return distance < 10
+        return distance < 25
 
     def Name(self):
         return "Lilach"

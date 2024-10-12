@@ -17,7 +17,7 @@ class Car(phy.RigidBody2D):
         self.steerAngle = 0
         self.MaxSteer = 50
 
-        self.MaxSpeed = 300
+        self.MaxSpeed = 350
 
         self.CurRPM = 0
         self.MaxRPM =1500
