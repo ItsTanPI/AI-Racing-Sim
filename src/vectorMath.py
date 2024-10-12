@@ -68,7 +68,6 @@ class Vector2:
             return 0
         
         cos_theta = dot_product / (mag_self * mag_other)
-        cos_theta = Clamp(cos_theta)
         
         angle_rad = math.acos(cos_theta)  
         angle_deg = math.degrees(angle_rad) 
@@ -76,7 +75,7 @@ class Vector2:
         return angle_deg
 
     def __repr__(self):
-        return f"Vector2({self.x:5.1}, {self.y:5.1})"
+        return f"Vector2({self.x:5}, {self.y:5})"
 
     def __str__(self):
         return f"Vector2({self.x:5.1}, {self.y:5.1})"
