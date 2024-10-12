@@ -186,7 +186,7 @@ class Car(phy.RigidBody2D):
 
     def steer(self, angDir, dt):
         if(self.steerAngle < self.MaxSteer-5 or self.steerAngle > 360-self.MaxSteer+5):
-            self.steerAngle += 90 * dt * angDir
+            self.steerAngle += (90 * angDir* dt) 
 
     def antisteer(self, dt):
         if(abs(self.steerAngle)!= 0):
@@ -226,7 +226,7 @@ class Car(phy.RigidBody2D):
 
     def debugDraw(self, screen, reward = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Gear: {self.gear} reward: {reward:5}", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5}", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10))
 
         vertices = self.findVertices()
