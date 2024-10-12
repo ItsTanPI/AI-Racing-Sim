@@ -2,20 +2,40 @@ import pygame
 import sys
 import random
 import vectorMath as VM
+import math
 
-def randCoord(SrcHeight,SrcWidth):
+
+def randCoord(SrcHeight=600,SrcWidth=800):
     x = random.randint(0,SrcHeight)
     y = random.randint(0,SrcWidth)
-    return VM.Vector2(x,y)
+    return (y,x)
 
-def LoopGen():
-    coords=[]
-    for i in range(10):
-        coords.append(randCoord(SrcHeight=600,SrcWidth=800))
+def generate_random_points(num_points, width, height):
+    coords = []
+    for _ in range(num_points):
+        x = random.randint(50, width - 50)
+        y = random.randint(50, height - 50)
+        coords.append((x, y))
+    return coords
 
-    for i in range(0,len(coords)-2):
-        pygame.draw.line(screen,GREEN,coords[i].rTuple(),coords[i+1].rTuple(),3)
-        
+def sort_points(points):
+
+    centroid_x = sum(x for x, y in points) / len(points)
+    centroid_y = sum(y for x, y in points) / len(points)
+    
+    print(f"Centroid:{centroid_x},{centroid_y}")
+
+    points.sort(key=lambda point: math.atan2(point[1] - centroid_y, point[0] - centroid_x))
+    
+    return points
+            
+
+def LoopGen(n):
+    coords = generate_random_points(n,800,600)
+    coords = sort_points(coords)
+    pygame.draw.polygon(screen, GREEN, coords, 3)
+    for i in coords:
+        i = VM.Vector2(i)
     return coords
 
 # Initialize Pygame
@@ -37,16 +57,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-'''count = 0
-while(True):
-    pygame.draw.line(screen,GREEN,randCoord(height,width).rTuple(),randCoord(height,width).rTuple(),6)
-    if count < 10:
-        count+=1
-    else:
-        break
-'''
 
-LoopGen()
 
 # Game loop
 def game_loop():
@@ -56,14 +67,13 @@ def game_loop():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+        
+        screen.fill(BLACK)
 
-        # Game logic (update game state here)
-
-        # Drawing (render the frame)
-
-        # Draw a simple shape (e.g., rectangle)
-    
-
+        coords = LoopGen(random.randint(4,20))
+        print(coords)
+        
+        pygame.time.wait(3000)
         # Update the display
         pygame.display.flip()
 
