@@ -1,85 +1,110 @@
 import pygame
-import sys
+import numpy as np
 import random
 import vectorMath as VM
-import math
 
 
-def randCoord(SrcHeight=600,SrcWidth=800):
-    x = random.randint(0,SrcHeight)
-    y = random.randint(0,SrcWidth)
-    return (y,x)
+WIDTH, HEIGHT = 1920, 1080
+N_CELLS = 20
+TRACK_INFLATE = 50
+FPS = 60
+TRACK_SCALE = 0.5  # Scale factor to reduce track size
 
-def generate_random_points(num_points, width, height):
-    coords = []
-    for _ in range(num_points):
-        x = random.randint(50, width - 50)
-        y = random.randint(50, height - 50)
-        coords.append((x, y))
-    return coords
+class TrackGenerator:
+    def __init__(self):
+        self.bbox = [0, WIDTH * TRACK_SCALE, 0, HEIGHT * TRACK_SCALE]  # bounding Box initialization
 
-def sort_points(points):
+    def generate_track(self):                                           # generate points within bounds
+        sites = [(random.uniform(self.bbox[0], self.bbox[1]),
+                   random.uniform(self.bbox[2], self.bbox[3])) for _ in range(N_CELLS)]
+        
+        points = self.convex_hull(sites)       
+        return np.array(points)
 
-    centroid_x = sum(x for x, y in points) / len(points)
-    centroid_y = sum(y for x, y in points) / len(points)
+    def convex_hull(self, points):                              # finding the convex HULL
+        points = sorted(set(map(tuple, points)))  
+
+        if len(points) <= 1:
+            return points
+
+        lower = []
+        for p in points:
+            while len(lower) >= 2 and self.ccw(lower[-2], lower[-1], p) <= 0:
+                lower.pop()
+            lower.append(p)
+
+        upper = []
+        for p in reversed(points):
+            while len(upper) >= 2 and self.ccw(upper[-2], upper[-1], p) <= 0:
+                upper.pop()
+            upper.append(p)
+
+        return lower[:-1] + upper[:-1]  
+
+    def ccw(self, p1, p2, p3):
+        return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
+
+def inflate_polygon(poly, spacing):                             # Inflate the polygon uniformly
+    center = np.mean(poly, axis=0)
+    inflated = []
+    for point in poly:
+        direction = point - center
+        norm = np.linalg.norm(direction)
+        if norm == 0:
+            continue
+        direction = direction / norm 
+        inflated_point = point + direction * spacing               # Move outward
+        inflated.append(inflated_point)
+    return np.array(inflated)
+
+def center_polygon(poly):                                           # Translate polygon to center the track
+    centroid = np.mean(poly, axis=0)
+    screen_center = np.array([WIDTH // 2, HEIGHT // 2])
+    translation = screen_center - centroid
+    centered_poly = poly + translation
+    return centered_poly
+
+def convert_to_VM(centered_track, inflated_track):
+    centered_vectors = [VM.Vector2(x, y) for x, y in centered_track]
+    inflated_vectors = [VM.Vector2(x, y) for x, y in inflated_track]
     
-    print(f"Centroid:{centroid_x},{centroid_y}")
+    return centered_vectors, inflated_vectors
 
-    points.sort(key=lambda point: math.atan2(point[1] - centroid_y, point[0] - centroid_x))
+def generateTrack(inflate_ratio = TRACK_INFLATE):
+    track_gen = TrackGenerator()
+    current_track = track_gen.generate_track()
+    centered_track = center_polygon(current_track)
+    inflated_track = inflate_polygon(centered_track, inflate_ratio)
+    return convert_to_VM(centered_track,inflated_track) 
+
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
+    clock = pygame.time.Clock()
+    track_gen = TrackGenerator()
+    last_track_time = pygame.time.get_ticks()
     
-    return points
-            
-
-def LoopGen(n):
-    coords = generate_random_points(n,800,600)
-    coords = sort_points(coords)
-    pygame.draw.polygon(screen, GREEN, coords, 3)
-    for i in coords:
-        i = VM.Vector2(i)
-    return coords
-
-# Initialize Pygame
-pygame.init()
-
-# Set up the display
-width, height = 800, 600
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Track-Generator")
-
-# Set up the clock for controlling the frame rate
-clock = pygame.time.Clock()
-fps = 60
-
-# Colors (R, G, B)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-
-
-
-# Game loop
-def game_loop():
-    while True:
-        # Event handling
+    running = True
+    current_track = track_gen.generate_track()
+    
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                running = False
+    
+        centered_track, inflated_track = generateTrack()
+
+        screen.fill((0, 0, 0))  
+        pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
+        pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
         
-        screen.fill(BLACK)
+        pygame.time.delay(3000)
 
-        coords = LoopGen(random.randint(4,20))
-        print(coords)
-        
-        pygame.time.wait(3000)
-        # Update the display
-        pygame.display.flip()
+        pygame.display.flip()  # Update the display
+        clock.tick(FPS)  # Control the frame rate
 
-        # Cap the frame rate
-        clock.tick(fps)
+    pygame.quit()
 
-# Start the game loop
 if __name__ == "__main__":
-    game_loop()
+    main()

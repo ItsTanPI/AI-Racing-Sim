@@ -1,24 +1,5 @@
 import math
 
-def Clamp(value):
-    if (value < 0):
-        return 0
-    elif(value > 1):
-        return 1
-    else:
-        return value
-
-
-def Lerp(a, b, t): 
-    value =  a + (b - a) * Clamp(t)
-    return value
-
-def ease_in_out_quad(t):
-    if t < 0.5:
-        return 2 * t * t
-    else:
-        return -1 + (4 * t) - (2 * t * t)
-
 class Vector2:
     def __init__(self, x=0, y=0):
         self.x = x
@@ -59,25 +40,9 @@ class Vector2:
         self.x = new_x
         self.y = new_y
 
-    def angle_between(self, other):
-        dot_product = self.dot(other)
-        mag_self = self.magnitude()
-        mag_other = other.magnitude()
-        
-        if mag_self == 0 or mag_other == 0:
-            return 0
-        
-        cos_theta = dot_product / (mag_self * mag_other)
-        cos_theta = Clamp(cos_theta)
-        
-        angle_rad = math.acos(cos_theta)  
-        angle_deg = math.degrees(angle_rad) 
-        
-        return angle_deg
-
     def __repr__(self):
-        return f"Vector2({self.x:5.1}, {self.y:5.1})"
+        return f"Vector2({self.x}, {self.y})" 
 
-    def __str__(self):
-        return f"Vector2({self.x:5.1}, {self.y:5.1})"
-        
+    def rTuple(self):
+        return (self.x,self.y)
+
