@@ -189,7 +189,7 @@ class LilachV2(gym.Env):
         return obs, reward, done, truncated, {}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(random.randint(500, 700), 300)
+        self.target_point = VM.Vector2(random.randint(100, 600), 300)
         #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.distance = (self.car.position - self.target_point).magnitude()
         
@@ -238,38 +238,52 @@ class LilachV2(gym.Env):
         carNormal = (self.car.dir - self.car.position)
         angle = distanceVect.angle_between(carNormal)
 
-        if deltaDistance > 0:
-            distcoeff = 10  
-        else:
-            distcoeff = 5  
 
+        
         self.prev_distance = distance
+        is_target_ahead = angle <= 90
 
-        is_target_ahead = angle <= 90 
+        if deltaDistance > 0:
+            distcoeff = 10
+        else:
+            distcoeff = 0 
 
         # Speed influence
-        speed_reward = max(0, velocityVect.magnitude())  
+        speed_reward = max(0, velocityVect.magnitude()) 
+
+          # Penalize for low speed
         if is_target_ahead:
             if velocityVect.y < 0:
-                Reward += ((speed_reward/5) * distcoeff)/10  
+                Reward += ((speed_reward/2) * distcoeff)/10  
+                if speed_reward < 10:  # Adjust threshold as needed
+                    Reward -= 10
+
+                if angle < 30:
+                    Reward += ((30 - angle)/10) * 20 
+                else:
+                    Reward += ((30 - angle)/10)
             else:
-                Reward -= ((speed_reward/10) * distcoeff) 
+                Reward += ((speed_reward/10) * distcoeff)
+                Reward -= 10 
         else:
             if velocityVect.y > 0:
                 Reward += ((speed_reward/5) * distcoeff)/10
+                if speed_reward < 10:
+                    Reward -= 10
+                if angle > 150:
+                    Reward += ((150 - angle)/10) * 10 
+                else:
+                    Reward += ((150 - angle)/10)
             else:
-                Reward -= ((speed_reward/10) * distcoeff)
-
-        if angle <= 30:
-            Reward += (30 - angle) 
-        else:
-            Reward -= 50  
-
+                Reward += ((speed_reward/10) * distcoeff)
+                Reward -= 10
+        
+        Reward /= 2
+        
         if self.check_done():
-            Reward += 500 
+            Reward += 800 
 
-
-        return int(Reward)
+        return (Reward)
 
     def screenNow(self, screen):
         self.screen = screen    

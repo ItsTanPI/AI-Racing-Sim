@@ -226,7 +226,7 @@ class Car(phy.RigidBody2D):
 
     def debugDraw(self, screen, reward = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5}", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5.4}", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10))
 
         vertices = self.findVertices()
