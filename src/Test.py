@@ -1,4 +1,4 @@
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, A2C
 import pygame
 import os
 import sys
@@ -6,7 +6,7 @@ from model import Lilach, LilachV2
 
 env = LilachV2()
 
-model_path = r'data\model\LilachV2.zip'
+model_path = r'data\model\LilachV2_episode_1.zip'
 if os.path.isfile(model_path):
     model = PPO.load(model_path, env=env, device="cuda")
     print("Loaded existing model.")
@@ -15,7 +15,7 @@ else:
     print("Loaded new model.")
 
 obs, info = env.reset()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((1920, 1080))  
 env.screenNow(screen)
 
 while True:
