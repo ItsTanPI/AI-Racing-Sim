@@ -112,22 +112,19 @@ class Car(phy.RigidBody2D):
             self.redRPM(dt, 1)
 
         if keys[pygame.K_d] or keys[pygame.K_RIGHT] or keys[pygame.K_a] or keys[pygame.K_LEFT]: 
-            if keys[pygame.K_d] or keys[pygame.K_RIGHT]:# turn right
+            if (keys[pygame.K_d] or keys[pygame.K_RIGHT]) and not (keys[pygame.K_a] or keys[pygame.K_LEFT]):# turn right
                 self.rotation += 120 * (self.velocity.magnitude() / 300) * dt * (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)
                 self.steer(1, dt)
                 if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):
                     self.applyDrift(1, dt)
                 else:
                     self.applyDrift(78, dt)
-
-
-            if keys[pygame.K_a] or keys[pygame.K_LEFT]:# turn left
+            elif (keys[pygame.K_a] or keys[pygame.K_LEFT]) and not (keys[pygame.K_d] or keys[pygame.K_RIGHT]):# turn left
                 self.rotation -= 120 * (self.velocity.magnitude() / 300) * dt * (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)
                 self.steer(-1, dt)
-                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):
-                    self.applyDrift(-1, dt)
-                else:
-                    self.applyDrift(78, dt)
+            else:
+                self.antisteer(dt)
+                self.applyDrift(78, dt)
         else:
             self.antisteer(dt)
             self.applyDrift(78, dt)
@@ -190,11 +187,12 @@ class Car(phy.RigidBody2D):
 
     def antisteer(self, dt):
         if(abs(self.steerAngle)!= 0):
-            if(self.steerAngle <= self.MaxSteer):
+            if(self.steerAngle <= self.MaxSteer and self.steerAngle != 0):
                 self.steerAngle -= 190 * dt
-            if(self.steerAngle >= 360-self.MaxSteer):
+            if(self.steerAngle >= 360-self.MaxSteer and self.steerAngle != 0):
                 self.steerAngle += 90 * dt
-            
+            if(self.steerAngle<3 and self.steerAngle>-3):
+                self.steerAngle = 0
 
     def acclerate(self, dir, dt):
         self.CurRPM = VM.Lerp(self.CurRPM, self.MaxRPM, 1*dt)
@@ -226,7 +224,7 @@ class Car(phy.RigidBody2D):
 
     def debugDraw(self, screen, reward = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5.4}", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5}", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10))
 
         vertices = self.findVertices()

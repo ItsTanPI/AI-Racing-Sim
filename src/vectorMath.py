@@ -74,8 +74,26 @@ class Vector2:
         
         return angle_deg
 
+    def global_to_local(self, Gpoint, Rotation):
+        
+        Rotation = math.radians(Rotation)
+
+        translated_point = Gpoint - self
+
+        # Step 2: Rotate the translated point by the inverse of the car's rotation (-car_rotation)
+        cos_theta = math.cos(Rotation)
+        sin_theta = math.sin(Rotation)
+
+        # Perform rotation using the rotation matrix
+        local_x = translated_point.x * cos_theta + translated_point.y * sin_theta
+        local_y = -translated_point.x * sin_theta + translated_point.y * cos_theta
+
+        # Step 3: Return the local coordinates as a Vector2
+        return Vector2(local_x, local_y)
+
+
     def __repr__(self):
-        return f"Vector2({self.x:5}, {self.y:5})"
+        return f"Vector2({self.x:5.1}, {self.y:5.1})"
 
     def __str__(self):
         return f"Vector2({self.x:5.1}, {self.y:5.1})"
