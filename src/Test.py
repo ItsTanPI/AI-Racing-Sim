@@ -6,7 +6,7 @@ from model import Lilach, LilachV2
 
 env = LilachV2()
 
-model_path = r'data\model\LilachV2_episode_1.zip'
+model_path = r'data\model\LilachV2_episode_2.zip'
 if os.path.isfile(model_path):
     model = PPO.load(model_path, env=env, device="cuda")
     print("Loaded existing model.")
@@ -17,7 +17,7 @@ else:
 obs, info = env.reset()
 screen = pygame.display.set_mode((1920, 1080))  
 env.screenNow(screen)
-
+clock = pygame.time.Clock()
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

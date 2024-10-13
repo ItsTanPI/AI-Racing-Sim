@@ -146,16 +146,16 @@ class LilachV2(gym.Env):
         self.action_space = gym.spaces.MultiDiscrete([3, 2, 3, 2])  
         self.observation_space = gym.spaces.Box(
                                 #x        y     ro    vel   rpm   steer      x        y     dist    ca
-                low=np.array([-np.inf, -np.inf, 0,     0,    0,     0,    -np.inf, -np.inf,  0,      0], dtype=np.float16),  
-                high=np.array([np.inf, np.inf, 360, np.inf, np.inf, 360 , np.inf, np.inf, np.inf, 360], dtype=np.float16), 
-                dtype=np.float16
+                low=np.array([-np.inf, -np.inf, 0,     0,    0,     0,    -np.inf, -np.inf,  0,      0], dtype=np.float32),  
+                high=np.array([np.inf, np.inf, 360, np.inf, np.inf, 360 , np.inf, np.inf, np.inf, 360], dtype=np.float32), 
+                dtype=np.float32
             )
 
         
         pygame.init()
         self.screen = 0
 
-        self.car = car.Car(VM.Vector2(400, 300), VM.Vector2(30, 100))
+        self.car = car.Car(VM.Vector2(50, 300), VM.Vector2(30, 100))
         self.target_point = VM.Vector2(500, 300)
         self.distance = (self.car.position - self.target_point).magnitude()
         self.prev_distance = self.distance  
@@ -163,6 +163,8 @@ class LilachV2(gym.Env):
 
         self.prev_rot = 0
         self.step_count = 0  
+
+        self.pos = 100
 
     def step(self, action):
         if isinstance(action, tuple):
@@ -176,6 +178,7 @@ class LilachV2(gym.Env):
         self.step_count+= 1
 
         dt = 0.016
+       
         self.car.handleAIInput(dt, throttle, brake, steer, reverse_gear, 2)
         #self.car.handleInput(dt)
         
@@ -189,8 +192,8 @@ class LilachV2(gym.Env):
         return obs, reward, done, truncated, {}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(random.randint(100, 600), 300)
-        #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
+        self.target_point = VM.Vector2(800, 300)
+        self.car = car.Car(VM.Vector2(200, 300), VM.Vector2(30, 100))
         self.distance = (self.car.position - self.target_point).magnitude()
         
         self.prev_distance = self.distance 
@@ -225,7 +228,7 @@ class LilachV2(gym.Env):
             self.target_point.y,
             distance_to_target,
             cangle,
-        ], dtype=np.float16)
+        ], dtype=np.float32)
 
     def calculate_reward(self):
         Reward = 0
@@ -238,13 +241,21 @@ class LilachV2(gym.Env):
         carNormal = (self.car.dir - self.car.position)
         angle = distanceVect.angle_between(carNormal)
 
+        localVector = (self.car.position).global_to_local(self.target_point, self.car.rotation)
+        localVector = localVector.normalize()
+        stangle = 0
+        if(self.car.steerAngle > 270):
+            stangle = self.car.steerAngle - 360
+        else:
+            stangle = self.car.steerAngle
+        stangle = int(stangle)
 
         
         self.prev_distance = distance
-        is_target_ahead = angle <= 90
+        is_target_ahead = angle <= 45
 
         if deltaDistance > 0:
-            distcoeff = 10
+            distcoeff = deltaDistance/2
         else:
             distcoeff = 0 
 
@@ -252,44 +263,51 @@ class LilachV2(gym.Env):
         speed_reward = max(0, velocityVect.magnitude()) 
 
           # Penalize for low speed
-        if is_target_ahead:
-            if velocityVect.y < 0:
-                Reward += ((speed_reward/2) * distcoeff)/10  
-                if speed_reward < 10:  # Adjust threshold as needed
-                    Reward -= 10
-
-                if angle < 30:
-                    Reward += ((30 - angle)/10) * 20 
-                else:
-                    Reward += ((30 - angle)/10)
+        if angle <= 45:
+            if velocityVect.y < 0:   
+                Reward += ((45 - angle)) * 2 
+                Reward += ((speed_reward/2) * distcoeff)/10
             else:
-                Reward += ((speed_reward/10) * distcoeff)
                 Reward -= 10 
-        else:
-            if velocityVect.y > 0:
-                Reward += ((speed_reward/5) * distcoeff)/10
-                if speed_reward < 10:
-                    Reward -= 10
-                if angle > 150:
-                    Reward += ((150 - angle)/10) * 10 
+        elif angle >= 150:
+            if distance < 350:
+                if velocityVect.y > 0:
+                    Reward += ((speed_reward/2) * distcoeff)/10
+                    Reward += ((angle - 150)) * 2
                 else:
-                    Reward += ((150 - angle)/10)
+                    Reward -= 10
+            elif (localVector.x > 0 and (stangle > 0)):
+                if (velocityVect.y > 0):
+                    Reward += ((speed_reward/2) * distcoeff)/10
+                Reward += stangle/4
+            elif (localVector.x < 0 and (stangle < 0)):
+                if (velocityVect.y > 0):
+                    Reward += ((speed_reward/2) * distcoeff)/10
+                Reward -= stangle/4
             else:
-                Reward += ((speed_reward/10) * distcoeff)
                 Reward -= 10
-        
-        Reward /= 2
-        
-        if self.check_done():
-            Reward += 800 
+        else:
+            if (localVector.x > 0 and (stangle > 0)):
+                Reward += stangle/4
+                Reward += ((speed_reward/2) * distcoeff)/10
+            elif (localVector.x < 0 and (stangle < 0)):
+                Reward -= stangle/4
+                Reward += ((speed_reward/2) * distcoeff)/10
+            else:
+                Reward -= 10
+                
 
-        return (Reward)
+        if self.check_done():
+            Reward += 800
+
+
+        return Reward
 
     def screenNow(self, screen):
         self.screen = screen    
 
     def render(self, reward, mode='human'):
-        self.screen.fill((100, 100, 100))
+        self.screen.fill((255, 255, 255))
 
         pygame.draw.line(self.screen, (0, 255, 0), (self.car.position.x, self.car.position.y), (self.target_point.x, self.target_point.y), 2)
         pygame.draw.circle(self.screen, (255, 0, 0), (int(self.target_point.x), int(self.target_point.y)), 10)
