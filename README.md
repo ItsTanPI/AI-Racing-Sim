@@ -1,4 +1,4 @@
-# Car Racing AI Game
+# AI-Racing-Sim
 
 Welcome to the **Car Racing AI Game** project! This project is built using Python, Pygame, and Gymnasium. It features a car racing game with AI-controlled cars navigating through randomly generated race tracks. The AI cars are currently under development and will be capable of driving autonomously once trained.
 
