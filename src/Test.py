@@ -6,7 +6,7 @@ from model import Lilach, LilachV2
 
 env = LilachV2()
 
-model_path = r'data\model\LilachV2_episode_2.zip'
+model_path = r'data\model\LilachV4-1.zip'
 if os.path.isfile(model_path):
     model = PPO.load(model_path, env=env, device="cuda")
     print("Loaded existing model.")
@@ -26,7 +26,9 @@ while True:
 
     action, _states = model.predict(obs)
     obs, reward, done, truncated, info = env.step(action)
-    env.render(reward)
+    env.render(reward, obs)
 
     if done:
         obs, info = env.reset()
+    
+    clock.tick(60)

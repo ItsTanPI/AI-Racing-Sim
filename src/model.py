@@ -143,19 +143,17 @@ class LilachV2(gym.Env):
     def __init__(self):
         super(LilachV2, self).__init__()
 
-        self.action_space = gym.spaces.MultiDiscrete([3, 2, 3, 2])  
+        self.action_space = gym.spaces.MultiDiscrete([3, 3, 2])  
         self.observation_space = gym.spaces.Box(
-                                #x        y     ro    vel   rpm   steer      x        y     dist    ca
-                low=np.array([-np.inf, -np.inf, 0,     0,    0,     0,    -np.inf, -np.inf,  0,      0], dtype=np.float32),  
-                high=np.array([np.inf, np.inf, 360, np.inf, np.inf, 360 , np.inf, np.inf, np.inf, 360], dtype=np.float32), 
-                dtype=np.float32
-            )
-
+                    #    CarX    CarY   V   R   S   TX          TY   D       A    LX  LY
+        low=np.array([-np.inf, -np.inf, -1, 0, -1, -np.inf, -np.inf, 0,      0, -1, -1], dtype=np.float32),
+        high=np.array([np.inf,  np.inf,  1, 1,  1,  np.inf,  np.inf, np.inf, 1,  1,  1], dtype=np.float32),
+        dtype=np.float32)
         
         pygame.init()
         self.screen = 0
 
-        self.car = car.Car(VM.Vector2(50, 300), VM.Vector2(30, 100))
+        self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.target_point = VM.Vector2(500, 300)
         self.distance = (self.car.position - self.target_point).magnitude()
         self.prev_distance = self.distance  
@@ -171,15 +169,14 @@ class LilachV2(gym.Env):
             action = action[0]
 
         throttle = action[0] - 1
-        brake = action[1]
-        steer = action[2] - 1
-        reverse_gear = action[3]
+        steer = action[1] - 1
+        reverseGear = action[2]
 
         self.step_count+= 1
 
         dt = 0.016
        
-        self.car.handleAIInput(dt, throttle, brake, steer, reverse_gear, 2)
+        self.car.handleAIInput(dt, throttle, steer, reverse_gear=reverseGear)
         #self.car.handleInput(dt)
         
         self.car.Update(dt)
@@ -192,8 +189,8 @@ class LilachV2(gym.Env):
         return obs, reward, done, truncated, {}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(800, 300)
-        self.car = car.Car(VM.Vector2(200, 300), VM.Vector2(30, 100))
+        self.target_point = VM.Vector2(random.randint(100, 1800), 300)
+        #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.distance = (self.car.position - self.target_point).magnitude()
         
         self.prev_distance = self.distance 
@@ -205,29 +202,66 @@ class LilachV2(gym.Env):
 
     
     def _get_observation(self):
-        pos = self.car.position
-        vel_mag = self.car.velocity.magnitude()
-        rotation = self.car.rotation
-        rpm = self.car.CurRPM
-        steerangle = self.car.steerAngle
+        
+        Car = self.car
 
-        distance_to_target = (self.car.position - self.target_point).magnitude()
-        vec1 = (self.target_point-self.car.position)
-        vec2 = (self.car.dir- self.car.position)
-        cangle = vec1.angle_between(vec2)
+        CarX = Car.position.x
+        CarY = Car.position.y
+
+        CarRotation = Car.rotation
+        CarRotation = ((CarRotation%360)/360)
+
+        CarVelocity = Car.velocity.magnitude()
+        if Car.velocity.y > 0:
+            CarVelocity *= -1
+        else:
+            CarVelocity *= +1
+
+        CarVelocity /= Car.MaxSpeed
+
+        if(self.car.steerAngle > 270):
+            CarSteer = self.car.steerAngle - 360
+        else:
+            CarSteer = self.car.steerAngle
+        CarSteer = CarSteer/Car.MaxSteer
+
+        TargetX = self.target_point.x
+        TargetY = self.target_point.y
+
+        distanceVect = (self.target_point - Car.position)
+        TargetDistance = distanceVect.magnitude()
+        
+                
+        CarFace = (Car.dir - Car.position)
+        TragetAngle = distanceVect.angle_between(CarFace)
+        TragetAngle = ((TragetAngle%360)/360)
+
+        localVector = (Car.position).global_to_local(self.target_point, Car.rotation)
+        localVector = localVector.normalize()
+
+        LocalX = localVector.x
+        LocalY = localVector.y
+
+        if LocalY > 0:
+            TargetDistance *= -1
+        else:
+            TargetDistance *= 1
 
         return np.array([
-            pos.x,          
-            pos.y,          
-            rotation,       
-            vel_mag,        
-            rpm,
-            steerangle,
+            CarX,
+            CarY,
+            CarVelocity,  # Normalized
+            CarRotation,  # Normalized
+            CarSteer,     # Normalized 
 
-            self.target_point.x,
-            self.target_point.y,
-            distance_to_target,
-            cangle,
+            TargetX,
+            TargetY,
+            TargetDistance,
+            TragetAngle,  # Normalized
+
+            LocalX,       # Normalized
+            LocalY        # Normalized  
+
         ], dtype=np.float32)
 
     def calculate_reward(self):
@@ -248,24 +282,20 @@ class LilachV2(gym.Env):
             stangle = self.car.steerAngle - 360
         else:
             stangle = self.car.steerAngle
-        stangle = int(stangle)
 
         
         self.prev_distance = distance
-        is_target_ahead = angle <= 45
 
         if deltaDistance > 0:
             distcoeff = deltaDistance/2
         else:
             distcoeff = 0 
 
-        # Speed influence
         speed_reward = max(0, velocityVect.magnitude()) 
 
-          # Penalize for low speed
         if angle <= 45:
             if velocityVect.y < 0:   
-                Reward += ((45 - angle)) * 2 
+                Reward += ((45 - angle)) * 2
                 Reward += ((speed_reward/2) * distcoeff)/10
             else:
                 Reward -= 10 
@@ -299,6 +329,7 @@ class LilachV2(gym.Env):
 
         if self.check_done():
             Reward += 800
+            print(f"Done, Pos({self.target_point.x}, {self.target_point.y})")
 
 
         return Reward
@@ -306,7 +337,7 @@ class LilachV2(gym.Env):
     def screenNow(self, screen):
         self.screen = screen    
 
-    def render(self, reward, mode='human'):
+    def render(self, reward, Obs, mode='human'):
         self.screen.fill((255, 255, 255))
 
         pygame.draw.line(self.screen, (0, 255, 0), (self.car.position.x, self.car.position.y), (self.target_point.x, self.target_point.y), 2)
@@ -318,7 +349,7 @@ class LilachV2(gym.Env):
 
 
         self.car.Draw(self.screen)
-        self.car.debugDraw(self.screen, reward)
+        self.car.debugDraw(self.screen, reward, Obs)
                 
         pygame.display.flip()
 
