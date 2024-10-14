@@ -28,7 +28,7 @@ while True:
     #Car.handleAIInput(0.016, 1, False, -1, False, 2)
     Car.Update(0.016)
     Car.Draw(screen)
-    Car.debugDraw(screen, [1])
+    Car.debugDraw(screen, 1, 0)
     #print(f"Speed: {Car.velocity.magnitude():5.1f}, RPM {Car.CurRPM: 5.0f}, Steer Angle {Car.steerAngle: 5.0f}, Body Angle {Car.rotation: 5.0f}")
 
 

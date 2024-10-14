@@ -23,29 +23,31 @@ def make_env():
 
 
 if __name__ == '__main__':    
-    n_agents = 16
+    n_agents = 20
     env = SubprocVecEnv([make_env() for _ in range(n_agents)])
     
-    model_path = r'data\model\LilachV2_episode_2.zip'
+    model_path = r'data\model\LilachV4-1.zip'
     if os.path.isfile(model_path):
         model = PPO.load(model_path, env=env, device="cuda", n_steps=3072, learning_rate = 0.0003)
         logging.info("Loaded existing model.")
         print("Loaded existing model.")
     else:
-        model = PPO("MlpPolicy", env, verbose=1, device="cuda")
+        model = PPO("MlpPolicy", env, verbose=1, device="cuda", n_steps=3072, learning_rate = 0.0003)
         print("Loaded new model.")
+    env.reset()
     
     
-    total_timesteps_per_episode = 100000  # Set timesteps per episode as needed
+    total_timesteps_per_episode = 240000  # Set timesteps per episode as needed
     num_episodes = 1
 
     for episode in range(num_episodes):
         print(f"Starting episode {episode + 1}/{num_episodes}")
-        model.learn(total_timesteps=total_timesteps_per_episode)
-        model.save(fr'data\model\LilachV2_episode_{episode + 2}.zip')
+        model.learn(total_timesteps=total_timesteps_per_episode)    
+        model.save(fr'data\model\LilachV4-{episode + 1}.zip')
+
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        message = (f"Model saved as LilachV2_episode_{episode + 2}.zip "
+        message = (f"Model saved as LilachV4-{episode + 1}.zip "
                    f"for episode {episode + 1} with {total_timesteps_per_episode} steps "
                    f"at {current_time}")
         

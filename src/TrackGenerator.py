@@ -5,10 +5,10 @@ import vectorMath as VM
 
 
 WIDTH, HEIGHT = 1920, 1080
-N_CELLS = 20
+N_CELLS = 50
 TRACK_INFLATE = 50
 FPS = 60
-TRACK_SCALE = 0.5  # Scale factor to reduce track size
+TRACK_SCALE = 0.75  # Scale factor to reduce track size
 
 class TrackGenerator:
     def __init__(self):
@@ -77,7 +77,7 @@ def generateTrack(inflate_ratio = TRACK_INFLATE):
     inflated_track = inflate_polygon(centered_track, inflate_ratio)
     return convert_to_VM(centered_track,inflated_track) 
 
-
+t = generateTrack()
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -93,13 +93,12 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
     
-        centered_track, inflated_track = generateTrack()
+        centered_track, inflated_track = t
 
         screen.fill((0, 0, 0))  
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
         
-        pygame.time.delay(3000)
 
         pygame.display.flip()  # Update the display
         clock.tick(FPS)  # Control the frame rate

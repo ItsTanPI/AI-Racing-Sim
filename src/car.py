@@ -122,6 +122,10 @@ class Car(phy.RigidBody2D):
             elif (keys[pygame.K_a] or keys[pygame.K_LEFT]) and not (keys[pygame.K_d] or keys[pygame.K_RIGHT]):# turn left
                 self.rotation -= 120 * (self.velocity.magnitude() / 300) * dt * (-1 if keys[pygame.K_s] or keys[pygame.K_DOWN] else 1)
                 self.steer(-1, dt)
+                if((not keys[pygame.K_s] or not keys[pygame.K_DOWN]) ):
+                    self.applyDrift(-1, dt)
+                else:
+                    self.applyDrift(78, dt)
             else:
                 self.antisteer(dt)
                 self.applyDrift(78, dt)
@@ -130,7 +134,7 @@ class Car(phy.RigidBody2D):
             self.applyDrift(78, dt)
 
 
-    def handleAIInput(self, dt, throttle, brake, steer, reverse_gear, gear):
+    def handleAIInput(self, dt, throttle, steer, brake = False, reverse_gear = False, gear= 1):
         """
         Handles car input controlled by an AI.
 
@@ -222,10 +226,22 @@ class Car(phy.RigidBody2D):
         screen.blit(rotated_image, new_rect.topleft)
 
 
-    def debugDraw(self, screen, reward = 0):
+    def debugDraw(self, screen, reward = 0, Obs = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward:5}", True, (0, 0, 0))  # Render the text
-        screen.blit(text_surface, (10, 10))
+        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward }", True, (0, 0, 0))  # Render the text
+        screen.blit(text_surface, (10, 10)) 
+
+        te = ""
+
+        for j in range(len(Obs)):
+            i = Obs[j]
+            if i < 1 and i >-1:
+                te = f"{i:5.10}"
+            else:
+                i = int(i)
+                te = f"{i}"
+            text_surface = font.render(f"{te}", True, (0, 0, 0))
+            screen.blit(text_surface, (10, 50 + j*50)) 
 
         vertices = self.findVertices()
         points = [(int(v.x), int(v.y)) for v in vertices]
