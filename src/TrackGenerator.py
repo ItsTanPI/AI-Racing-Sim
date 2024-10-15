@@ -6,7 +6,7 @@ import vectorMath as VM
 
 WIDTH, HEIGHT = 1920, 1080
 N_CELLS = 50
-TRACK_INFLATE = 50
+TRACK_INFLATE = 80
 FPS = 60
 TRACK_SCALE = 0.75  # Scale factor to reduce track size
 
@@ -70,6 +70,17 @@ def convert_to_VM(centered_track, inflated_track):
     
     return centered_vectors, inflated_vectors
 
+def ccw(A,B,C):
+    A = VM.Vector2(A)
+    B = VM.Vector2(B)
+    C = VM.Vector2(C)
+    return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
+    
+
+def line_intersects(p1, p2, q1, q2):                                        # True if line intersects
+    return ccw(p1, q1, q2) != ccw(p2, q1, q2) and ccw(p1, p2, q1) != ccw(p1, p2, q2)
+
+
 def generateTrack(inflate_ratio = TRACK_INFLATE):
     track_gen = TrackGenerator()
     current_track = track_gen.generate_track()
@@ -78,6 +89,7 @@ def generateTrack(inflate_ratio = TRACK_INFLATE):
     return convert_to_VM(centered_track,inflated_track) 
 
 t = generateTrack()
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -88,14 +100,56 @@ def main():
     running = True
     current_track = track_gen.generate_track()
     
+    line_start = VM.Vector2(100,100)
+    line_end = VM.Vector2(20, 100)
+
+    line_speed = 5
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
     
         centered_track, inflated_track = t
+        print(f"centered_track : {centered_track} \n inflated_track : {inflated_track}")
+
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_d]:
+            line_start.x += line_speed
+            line_end.x += line_speed
+            if line_speed >8 : line_speed += 1
+        
+        if keys[pygame.K_a]:
+            line_start.x -= line_speed
+            line_end.x -= line_speed
+            if line_speed >5 : line_speed -= 1 
+
+        if keys[pygame.K_s]:
+            line_start.y += line_speed
+            line_end.y += line_speed
+            if line_speed >8 : line_speed += 1 
+
+        if keys[pygame.K_w]:
+            line_start.y -= line_speed
+            line_end.y -= line_speed
+            if line_speed >5 : line_speed -= 1 
+
+        for i in range(len(current_track)):
+            p1 = current_track[i]
+            p2 = current_track[(i + 1) % len(current_track)]
+            r1 = inflated_track[i]
+            r2 = inflated_track[(i + 1) % len(inflated_track)]
+            if line_intersects(line_start, line_end, p1, p2):
+                line_color = (0, 255, 0) 
+                break
+            elif line_intersects(line_start,line_end,r1,r2):
+                line_color = (0, 0, 255)
+                break
 
         screen.fill((0, 0, 0))  
+
+        pygame.draw.line(screen,line_color,(line_start.x,line_start.y),(line_end.x,line_end.y),5)   #Line as Car
+
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
         
