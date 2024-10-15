@@ -143,7 +143,7 @@ class LilachV2(gym.Env):
     def __init__(self):
         super(LilachV2, self).__init__()
 
-        self.action_space = gym.spaces.MultiDiscrete([3, 3, 2])  
+        self.action_space = gym.spaces.MultiDiscrete([2, 3, 2])  
         self.observation_space = gym.spaces.Box(
                     #    CarX    CarY   V   R   S   TX          TY   D       A    LX  LY
         low=np.array([-np.inf, -np.inf, -1, 0, -1, -np.inf, -np.inf, 0,      0, -1, -1], dtype=np.float32),
@@ -157,40 +157,40 @@ class LilachV2(gym.Env):
         self.target_point = VM.Vector2(500, 300)
         self.distance = (self.car.position - self.target_point).magnitude()
         self.prev_distance = self.distance  
-        self.prev_rpm = 0  
 
-        self.prev_rot = 0
-        self.step_count = 0  
-
-        self.pos = 100
-
-    def step(self, action):
+    def step(self, action, type = "A"):
         if isinstance(action, tuple):
             action = action[0]
 
-        throttle = action[0] - 1
+        throttle = action[0]
         steer = action[1] - 1
         reverseGear = action[2]
 
-        self.step_count+= 1
-
         dt = 0.016
-       
-        self.car.handleAIInput(dt, throttle, steer, reverse_gear=reverseGear)
-        #self.car.handleInput(dt)
+        if (type == "A"):
+            self.car.handleAIInput(dt, throttle, steer, reverse_gear=reverseGear)
+        elif (type == "H"):
+            self.car.handleInput(dt)
+        else:
+            self.car.handleAIInput(dt, throttle, steer, reverse_gear=reverseGear)
+
         
         self.car.Update(dt)
+        distanceVect = (self.target_point - self.car.position)
+        TargetDistance = distanceVect.magnitude()
 
+        if TargetDistance > 2000:
+            self.reset()
         reward = self.calculate_reward()
         done = self.check_done()
         obs = self._get_observation()
         truncated = False
 
-        return obs, reward, done, truncated, {}
+        return obs, reward, done, truncated, {"Distance": TargetDistance, "Action": action}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(random.randint(100, 1800), 300)
-        #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
+        self.target_point = VM.Vector2(random.randint(100, 700), 300)
+        self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.distance = (self.car.position - self.target_point).magnitude()
         
         self.prev_distance = self.distance 
@@ -241,11 +241,6 @@ class LilachV2(gym.Env):
 
         LocalX = localVector.x
         LocalY = localVector.y
-
-        if LocalY > 0:
-            TargetDistance *= -1
-        else:
-            TargetDistance *= 1
 
         return np.array([
             CarX,
@@ -298,14 +293,14 @@ class LilachV2(gym.Env):
                 Reward += ((45 - angle)) * 2
                 Reward += ((speed_reward/2) * distcoeff)/10
             else:
-                Reward -= 10 
+                Reward -= 100 
         elif angle >= 150:
-            if distance < 350:
+            if distance < 250:
                 if velocityVect.y > 0:
                     Reward += ((speed_reward/2) * distcoeff)/10
                     Reward += ((angle - 150)) * 2
                 else:
-                    Reward -= 10
+                    Reward -= 50
             elif (localVector.x > 0 and (stangle > 0)):
                 if (velocityVect.y > 0):
                     Reward += ((speed_reward/2) * distcoeff)/10
@@ -315,7 +310,7 @@ class LilachV2(gym.Env):
                     Reward += ((speed_reward/2) * distcoeff)/10
                 Reward -= stangle/4
             else:
-                Reward -= 10
+                Reward -= 50
         else:
             if (localVector.x > 0 and (stangle > 0)):
                 Reward += stangle/4
@@ -324,7 +319,7 @@ class LilachV2(gym.Env):
                 Reward -= stangle/4
                 Reward += ((speed_reward/2) * distcoeff)/10
             else:
-                Reward -= 10
+                Reward -= 25
                 
 
         if self.check_done():

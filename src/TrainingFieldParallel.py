@@ -28,16 +28,28 @@ if __name__ == '__main__':
     
     model_path = r'data\model\LilachV4-1.zip'
     if os.path.isfile(model_path):
-        model = PPO.load(model_path, env=env, device="cuda", n_steps=3072, learning_rate = 0.0003)
+        model = PPO.load(model_path, env=env, device="cuda", n_steps=3072, learning_rate = 0.001, batch_size=128, ent_coef=0.001)
         logging.info("Loaded existing model.")
         print("Loaded existing model.")
     else:
-        model = PPO("MlpPolicy", env, verbose=1, device="cuda", n_steps=3072, learning_rate = 0.0003)
+        model = PPO("MlpPolicy", env, verbose=1, device="cuda", n_steps=3072, learning_rate = 0.001, batch_size=128, ent_coef=0.001)
         print("Loaded new model.")
     env.reset()
     
-    
-    total_timesteps_per_episode = 240000  # Set timesteps per episode as needed
+    """model = PPO(
+    'MlpPolicy',
+    env,
+    learning_rate=0.001,
+    ent_coef=0.01,
+    gamma=0.99,
+    gae_lambda=0.95,
+    n_epochs=10,
+    batch_size=64,
+    clip_range=0.2,
+    max_grad_norm=0.5,
+    verbose=1
+)"""
+    total_timesteps_per_episode = 100000  # Set timesteps per episode as needed
     num_episodes = 1
 
     for episode in range(num_episodes):
