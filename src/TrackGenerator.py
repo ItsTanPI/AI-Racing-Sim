@@ -70,15 +70,26 @@ def convert_to_VM(centered_track, inflated_track):
     
     return centered_vectors, inflated_vectors
 
-def ccw(A,B,C):
+def line_intersection(A, B, C, D):
     A = VM.Vector2(A)
     B = VM.Vector2(B)
     C = VM.Vector2(C)
-    return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
-    
+    D = VM.Vector2(D)
 
-def line_intersects(p1, p2, q1, q2):                                        # True if line intersects
-    return ccw(p1, q1, q2) != ccw(p2, q1, q2) and ccw(p1, p2, q1) != ccw(p1, p2, q2)
+    denominator = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x)             # Calculate the denominator
+
+    if denominator == 0:                                                            # If the denominator is zero, lines are parallel
+        return None  
+
+    t = ((A.x - C.x) * (D.y - C.y) - (A.y - C.y) * (D.x - C.x)) / denominator       # Calculate the intersection point
+    u = -((A.x - B.x) * (A.y - C.y) - (A.y - B.y) * (A.x - C.x)) / denominator
+
+    if 0 <= t <= 1 and 0 <= u <= 1:                                                # Check if the intersection point is on both segments
+        intersection_x = A.x + t * (B.x - A.x)
+        intersection_y = A.y + t * (B.y - A.y)
+        return (intersection_x, intersection_y)  
+
+    return None 
 
 
 def generateTrack(inflate_ratio = TRACK_INFLATE):
@@ -139,11 +150,16 @@ def main():
             p2 = current_track[(i + 1) % len(current_track)]
             r1 = inflated_track[i]
             r2 = inflated_track[(i + 1) % len(inflated_track)]
-            if line_intersects(line_start, line_end, p1, p2):
-                line_color = (0, 255, 0) 
+            collision_center = line_intersection(line_start, line_end, p1, p2)
+            collision_inflated = line_intersection(line_start,line_end,r1,r2)    
+            if collision_center:
+                line_color = (0, 255, 0)
+                print(collision_center)
                 break
-            elif line_intersects(line_start,line_end,r1,r2):
+            elif collision_inflated:
                 line_color = (0, 0, 255)
+                line_color = (0, 255, 0)
+                print(collision_center)
                 break
 
         screen.fill((0, 0, 0))  
