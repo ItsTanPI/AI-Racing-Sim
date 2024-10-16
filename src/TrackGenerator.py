@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 import random
 import vectorMath as VM
+# from vectorMath import line_intersection 
 
 
 WIDTH, HEIGHT = 1920, 1080
@@ -70,28 +71,6 @@ def convert_to_VM(centered_track, inflated_track):
     
     return centered_vectors, inflated_vectors
 
-def line_intersection(A, B, C, D):
-    A = VM.Vector2(A)
-    B = VM.Vector2(B)
-    C = VM.Vector2(C)
-    D = VM.Vector2(D)
-
-    denominator = (B.x - A.x) * (D.y - C.y) - (B.y - A.y) * (D.x - C.x)             # Calculate the denominator
-
-    if denominator == 0:                                                            # If the denominator is zero, lines are parallel
-        return None  
-
-    t = ((A.x - C.x) * (D.y - C.y) - (A.y - C.y) * (D.x - C.x)) / denominator       # Calculate the intersection point
-    u = -((A.x - B.x) * (A.y - C.y) - (A.y - B.y) * (A.x - C.x)) / denominator
-
-    if 0 <= t <= 1 and 0 <= u <= 1:                                                # Check if the intersection point is on both segments
-        intersection_x = A.x + t * (B.x - A.x)
-        intersection_y = A.y + t * (B.y - A.y)
-        return (intersection_x, intersection_y)  
-
-    return None 
-
-
 def generateTrack(inflate_ratio = TRACK_INFLATE):
     track_gen = TrackGenerator()
     current_track = track_gen.generate_track()
@@ -99,79 +78,67 @@ def generateTrack(inflate_ratio = TRACK_INFLATE):
     inflated_track = inflate_polygon(centered_track, inflate_ratio)
     return convert_to_VM(centered_track,inflated_track) 
 
-t = generateTrack()
+def line_intersection(p1, p2, q1, q2):                                       # True if line intersects
+    def ccw(A, B, C):
+        return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
+    
+    return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2))) 
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     track_gen = TrackGenerator()
-    last_track_time = pygame.time.get_ticks()
-    
-    running = True
-    current_track = track_gen.generate_track()
-    
-    line_start = VM.Vector2(100,100)
+    line_start = VM.Vector2(300, 100)
     line_end = VM.Vector2(20, 100)
-
     line_speed = 5
+    running = True
+    centered_track, inflated_track = generateTrack()
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-    
-        centered_track, inflated_track = t
-        print(f"centered_track : {centered_track} \n inflated_track : {inflated_track}")
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
             line_start.x += line_speed
             line_end.x += line_speed
-            if line_speed >8 : line_speed += 1
-        
+            line_speed += 1 if line_speed <= 8 else 0
         if keys[pygame.K_a]:
             line_start.x -= line_speed
             line_end.x -= line_speed
-            if line_speed >5 : line_speed -= 1 
-
+            line_speed -= 1 if line_speed > 5 else 0
         if keys[pygame.K_s]:
             line_start.y += line_speed
             line_end.y += line_speed
-            if line_speed >8 : line_speed += 1 
-
+            line_speed += 1 if line_speed <= 8 else 0
         if keys[pygame.K_w]:
             line_start.y -= line_speed
             line_end.y -= line_speed
-            if line_speed >5 : line_speed -= 1 
+            line_speed -= 1 if line_speed > 5 else 0
 
-        for i in range(len(current_track)):
-            p1 = current_track[i]
-            p2 = current_track[(i + 1) % len(current_track)]
+        line_color = (255, 255, 255)  # Default line color
+        for i in range(len(centered_track)):
+            p1 = centered_track[i]
+            p2 = centered_track[(i + 1) % len(centered_track)]
             r1 = inflated_track[i]
             r2 = inflated_track[(i + 1) % len(inflated_track)]
-            collision_center = line_intersection(line_start, line_end, p1, p2)
-            collision_inflated = line_intersection(line_start,line_end,r1,r2)    
-            if collision_center:
-                line_color = (0, 255, 0)
-                print(collision_center)
+
+            if line_intersection(line_start.rTuple(), line_end.rTuple(), p1.rTuple(), p2.rTuple()):
+                line_color = (0, 255, 0)  # Collision with centered track
                 break
-            elif collision_inflated:
-                line_color = (0, 0, 255)
-                line_color = (0, 255, 0)
-                print(collision_center)
+            elif line_intersection(line_start.rTuple(), line_end.rTuple(), r1.rTuple(), r2.rTuple()):
+                line_color = (255, 0,0 )  # Collision with inflated track
                 break
 
-        screen.fill((0, 0, 0))  
-
-        pygame.draw.line(screen,line_color,(line_start.x,line_start.y),(line_end.x,line_end.y),5)   #Line as Car
-
+        screen.fill((0, 0, 0))
+        pygame.draw.line(screen, line_color, (line_start.x, line_start.y), (line_end.x, line_end.y), 5)
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
-        
 
-        pygame.display.flip()  # Update the display
-        clock.tick(FPS)  # Control the frame rate
+        pygame.display.flip()
+        clock.tick(FPS)
 
     pygame.quit()
 

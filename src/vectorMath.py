@@ -100,4 +100,5 @@ class Vector2:
     
     def rTuple(self):
         return (self.x,self.y)
+    
         
