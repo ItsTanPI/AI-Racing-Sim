@@ -100,4 +100,8 @@ class Vector2:
 
     def __str__(self):
         return f"Vector2({self.x:5.1}, {self.y:5.1})"
+    
+    def rTuple(self):
+        return (self.x,self.y)
+    
         
