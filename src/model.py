@@ -4,7 +4,7 @@ import car
 import pygame
 import random
 import gymnasium as gym
-
+import math
 class Lilach(gym.Env):
 
     def __init__(self):
@@ -143,7 +143,7 @@ class LilachV2(gym.Env):
     def __init__(self):
         super(LilachV2, self).__init__()
 
-        self.action_space = gym.spaces.MultiDiscrete([3, 3, 2])  
+        self.action_space = gym.spaces.MultiDiscrete([2, 3])  
         self.observation_space = gym.spaces.Box(
                     #    CarX    CarY   V   R   S   TX          TY   D       A    LX  LY
         low=np.array([-np.inf, -np.inf, -1, 0, -1, -np.inf, -np.inf, 0,      0, -1, -1], dtype=np.float32),
@@ -152,51 +152,58 @@ class LilachV2(gym.Env):
         
         pygame.init()
         self.screen = 0
+        self.steps = 0
 
         self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
         self.target_point = VM.Vector2(500, 300)
         self.distance = (self.car.position - self.target_point).magnitude()
         self.prev_distance = self.distance  
-        self.prev_rpm = 0  
 
-        self.prev_rot = 0
-        self.step_count = 0  
-
-        self.pos = 100
-
-    def step(self, action):
+    def step(self, action, type = "A"):
         if isinstance(action, tuple):
             action = action[0]
 
-        throttle = action[0] - 1
+        self.steps += 1
+        throttle = action[0]
         steer = action[1] - 1
-        reverseGear = action[2]
-
-        self.step_count+= 1
 
         dt = 0.016
-       
-        self.car.handleAIInput(dt, throttle, steer, reverse_gear=reverseGear)
-        #self.car.handleInput(dt)
+        if (type == "A"):
+            self.car.handleAIInput(dt, throttle, steer)
+        elif (type == "H"):
+            self.car.handleInput(dt)
+        else:
+            self.car.handleAIInput(dt, throttle, steer)
+
         
         self.car.Update(dt)
-
-        reward = self.calculate_reward()
-        done = self.check_done()
+        
         obs = self._get_observation()
+        done = self.check_done()
+        reward = self.calculate_reward()
         truncated = False
 
-        return obs, reward, done, truncated, {}
+        distanceVect = (self.target_point - self.car.position)
+        TargetDistance = distanceVect.magnitude()
+
+        return obs, reward, done, truncated, {"Distance": TargetDistance, "Action": action}
 
     def reset(self, seed=None, options=None):
-        self.target_point = VM.Vector2(random.randint(100, 1800), 300)
-        #self.car = car.Car(VM.Vector2(300, 300), VM.Vector2(30, 100))
+        self.car = car.Car(VM.Vector2(960, 540), VM.Vector2(30, 100))
+        self.car.rotation = random.randint(0, 360) 
+        distance = 300
+        self.rangle =0 #random.randint(-5, 5)
+        x = distance * math.cos(math.radians(self.car.rotation - 90 + self.rangle))
+        y = distance * math.sin(math.radians(self.car.rotation - 90 + self.rangle))
+        self.target_point = VM.Vector2(960 + x, 540 + y)
+        
+        
         self.distance = (self.car.position - self.target_point).magnitude()
         
         self.prev_distance = self.distance 
         self.prev_rpm = 0  
         self.prev_rot = 0
-        self.step_count = 0
+        self.steps= 0
         
         return self._get_observation(), {}
 
@@ -239,13 +246,8 @@ class LilachV2(gym.Env):
         localVector = (Car.position).global_to_local(self.target_point, Car.rotation)
         localVector = localVector.normalize()
 
-        LocalX = localVector.x
-        LocalY = localVector.y
-
-        if LocalY > 0:
-            TargetDistance *= -1
-        else:
-            TargetDistance *= 1
+        LocalX = round(localVector.x, 4)
+        LocalY = round(localVector.y, 4)
 
         return np.array([
             CarX,
@@ -293,44 +295,40 @@ class LilachV2(gym.Env):
 
         speed_reward = max(0, velocityVect.magnitude()) 
 
-        if angle <= 45:
+        if angle <= 30:
             if velocityVect.y < 0:   
-                Reward += ((45 - angle)) * 2
-                Reward += ((speed_reward/2) * distcoeff)/10
-            else:
-                Reward -= 10 
-        elif angle >= 150:
-            if distance < 350:
-                if velocityVect.y > 0:
-                    Reward += ((speed_reward/2) * distcoeff)/10
-                    Reward += ((angle - 150)) * 2
-                else:
-                    Reward -= 10
-            elif (localVector.x > 0 and (stangle > 0)):
-                if (velocityVect.y > 0):
-                    Reward += ((speed_reward/2) * distcoeff)/10
-                Reward += stangle/4
-            elif (localVector.x < 0 and (stangle < 0)):
-                if (velocityVect.y > 0):
-                    Reward += ((speed_reward/2) * distcoeff)/10
-                Reward -= stangle/4
-            else:
-                Reward -= 10
+                Reward += ((30 - angle)) * 0.3
+                Reward += ((speed_reward/2) * distcoeff * ((30 - angle)) * 0.3 )/10
         else:
             if (localVector.x > 0 and (stangle > 0)):
-                Reward += stangle/4
+                Reward += stangle/5
                 Reward += ((speed_reward/2) * distcoeff)/10
             elif (localVector.x < 0 and (stangle < 0)):
-                Reward -= stangle/4
+                Reward -= stangle/5
                 Reward += ((speed_reward/2) * distcoeff)/10
-            else:
-                Reward -= 10
-                
+
+        if (localVector.x <= 0 and (stangle > 0)):
+            Reward -= ((abs(stangle)/4) * 5)
+        elif (localVector.x >= 0 and (stangle < 0)):
+            Reward -= ((abs(stangle)/4) * 5)
+
 
         if self.check_done():
-            Reward += 800
-            print(f"Done, Pos({self.target_point.x}, {self.target_point.y})")
+            Reward += 8000
+            print(f"Done, Pos({self.target_point.x}, {self.target_point.y}, Angle: {self.rangle})")
 
+        if self.steps > 8000:
+            Reward -= 8000
+            print(f"Failed")
+            self.reset()
+
+        distanceVect = (self.target_point - self.car.position)
+        TargetDistance = distanceVect.magnitude()
+
+        if TargetDistance > 2000:
+            Reward -= 800
+            self.reset()
+            print(f"Reset")        
 
         return Reward
 
@@ -355,7 +353,7 @@ class LilachV2(gym.Env):
 
     def check_done(self):
         distance = (self.car.position - self.target_point).magnitude()
-        return distance < 25
+        return distance < 15
 
     def Name(self):
         return "Lilach"
