@@ -6,14 +6,42 @@ from model import Lilach, LilachV2
 
 env = LilachV2()
 
-model_path = r'data\model\Best1.zip'
+def print_hyperparameters(model):
+    print("==== PPO Hyperparameters ====")
+    print("Learning Rate:", model.learning_rate)
+    print("Gamma (Discount Factor):", model.gamma)
+    print("Number of Environments:", model.n_envs)
+    print("Entropy Coefficient:", model.ent_coef)
+    print("Clip Range:", model.clip_range)
+    print("GAE Lambda:", model.gae_lambda)
+    print("Number of Epochs:", model.n_epochs)
+    print("Max Gradient Norm:", model.max_grad_norm)
+    print("Number of Steps per Rollout:", model.n_steps)
+    print("Batch Size:", model.batch_size)
+    print("Policy Architecture (Hidden Layers):", model.policy_kwargs)
+    print("Device (CPU or GPU):", model.device)
+    print("=============================")
+
+model_path = r'data\model\LilachV4-1.zip'
 if os.path.isfile(model_path):
-    model = PPO.load(model_path, env=env, device="cuda")
+    model = PPO.load(model_path, env = env, verbose=1, device="cuda",
+                          learning_rate = 0.0001,
+                          batch_size=256,
+                          n_steps=4096,
+                          clip_range=0.05,
+                          ent_coef=0.001,
+                          gae_lambda=0.99,
+                          n_epochs=30,
+                          max_grad_norm=0.1,
+                          policy_kwargs = dict(net_arch=[128, 64, 32])
+                          )
     print("Loaded existing model.")
 else:
-    model = PPO("MlpPolicy", env, verbose=1, device="cuda", gamma=0.5)
+    model = PPO("MlpPolicy", env, verbose=1, device="cuda")
     print("Loaded new model.")
 
+
+print_hyperparameters(model)
 """model = PPO(
     'MlpPolicy',
     env,
@@ -47,7 +75,7 @@ while True:
                     type = "H"
                 elif (type == "H"):
                     type = "A"
-                else:
+                else:   
                     type = "A"
 
 
@@ -57,9 +85,7 @@ while True:
 
     #log_data(log_path, obs, action, reward, info)
 
-    if info["Distance"] > 1500:
-        env.reset()
     if done:
         obs, info = env.reset()
     
-    clock.tick(60)
+    clock.tick(60)  

@@ -1,5 +1,5 @@
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, A2C
 import logging
 import torch
 from stable_baselines3.common.vec_env import SubprocVecEnv
@@ -21,6 +21,21 @@ def make_env():
         return LilachV2()
     return _init
 
+def print_hyperparameters(model):
+    print("==== PPO Hyperparameters ====")
+    print("Learning Rate:", model.learning_rate)
+    print("Gamma (Discount Factor):", model.gamma)
+    print("Number of Environments:", model.n_envs)
+    print("Entropy Coefficient:", model.ent_coef)
+    print("Clip Range:", model.clip_range)
+    print("GAE Lambda:", model.gae_lambda)
+    print("Number of Epochs:", model.n_epochs)
+    print("Max Gradient Norm:", model.max_grad_norm)
+    print("Number of Steps per Rollout:", model.n_steps)
+    print("Batch Size:", model.batch_size)
+    print("Policy Architecture (Hidden Layers):", model.policy_kwargs)
+    print("Device (CPU or GPU):", model.device)
+    print("=============================")
 
 if __name__ == '__main__':    
     n_agents = 20
@@ -28,18 +43,39 @@ if __name__ == '__main__':
     
     model_path = r'data\model\LilachV4-1.zip'
     if os.path.isfile(model_path):
-        model = PPO.load(model_path, env=env, device="cuda", n_steps=3072, learning_rate = 0.001, batch_size=128, ent_coef=0.001)
-        logging.info("Loaded existing model.")
-        print("Loaded existing model.")
+        model = PPO.load(model_path, env = env, verbose=1, device="cuda",
+                          learning_rate = 0.0001,
+                          batch_size=256,
+                          n_steps=4096,
+                          clip_range=0.05,
+                          ent_coef=0.001,
+                          gae_lambda=0.99,
+                          n_epochs=30,
+                          max_grad_norm=0.1,
+                          policy_kwargs = dict(net_arch=[64, 32, 16])
+                          )
     else:
-        model = PPO("MlpPolicy", env, verbose=1, device="cuda", n_steps=3072, learning_rate = 0.001, batch_size=128, ent_coef=0.001)
+        model = PPO("MlpPolicy", env=env, verbose=1, device="cuda",
+                          learning_rate = 0.0001,
+                          batch_size=256,
+                          n_steps=4096,
+                          clip_range=0.05,
+                          ent_coef=0.001,
+                          gae_lambda=0.99,
+                          n_epochs=30,
+                          max_grad_norm=0.1,
+                          policy_kwargs = dict(net_arch=[64, 32, 16])
+                          )
         print("Loaded new model.")
     env.reset()
     
-    """model = PPO(
-    'MlpPolicy',
+    print_hyperparameters(model)
+    
+    """
+    model = PPO
+    ('MlpPolicy',
     env,
-    learning_rate=0.001,
+    learning_rate=0.00,
     ent_coef=0.01,
     gamma=0.99,
     gae_lambda=0.95,
@@ -47,9 +83,8 @@ if __name__ == '__main__':
     batch_size=64,
     clip_range=0.2,
     max_grad_norm=0.5,
-    verbose=1
-)"""
-    total_timesteps_per_episode = 100000  # Set timesteps per episode as needed
+    verbose=1)"""
+    total_timesteps_per_episode = 200000  # Set timesteps per episode as needed
     num_episodes = 1
 
     for episode in range(num_episodes):
