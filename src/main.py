@@ -10,7 +10,7 @@ SrcHeight = 1080
 pygame.init()
 screen = pygame.display.set_mode((SrcWidth, SrcHeight))
 clock = pygame.time.Clock()  
-
+    
 WHITE = (100, 100, 100)
 RED = (255, 0, 0)
 
