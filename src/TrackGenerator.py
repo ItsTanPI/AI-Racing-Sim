@@ -7,7 +7,7 @@ import vectorMath as VM
 
 WIDTH, HEIGHT = 1920, 1080
 N_CELLS = 50
-TRACK_INFLATE = 100
+TRACK_INFLATE = 80
 FPS = 60
 TRACK_SCALE = 0.75  # Scale factor to reduce track size
 
@@ -44,6 +44,7 @@ class TrackGenerator:
 
     def ccw(self, p1, p2, p3):
         return (p2[0] - p1[0]) * (p3[1] - p1[1]) - (p2[1] - p1[1]) * (p3[0] - p1[0])
+    
 
 def inflate_polygon(poly, spacing):                             # Inflate the polygon uniformly
     center = np.mean(poly, axis=0)
@@ -82,14 +83,33 @@ def line_intersection(p1, p2, q1, q2):                                       # T
     def ccw(A, B, C):
         return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
     
-    return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2)))          #gaus sedal
+    return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2)))
+
+
+def find_point(p1,p2,q1,q2):                    #returns the Intersection points of two line in Vector2 format
+        A1 = p2[1] - p1[1]
+        B1 = p1[0] - p2[0]
+        C1 = A1 * p1[0] + B1 * p1[1]
+
+        A2 = q2[1] - q1[1]
+        B2 = q1[0] - q2[0]
+        C2 = A2 * q1[0] + B2 * q1[1]
+
+        determinant = A1 * B2 - A2 * B1
+
+        if determinant == 0:
+            return None                         #parallel
+
+        x = (B2 * C1 - B1 * C2) / determinant   # Cramer's rule
+        y = (A1 * C2 - A2 * C1) / determinant
+        return VM.Vector2(x, y)
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     track_gen = TrackGenerator()
-    line_start = VM.Vector2(300, 200)
+    line_start = VM.Vector2(300, 100)
     line_end = VM.Vector2(20, 100)
     line_speed = 5
     running = True
@@ -119,6 +139,7 @@ def main():
             line_speed -= 1 if line_speed > 5 else 0
 
         line_color = (255, 255, 255)  # Default line color
+        screen.fill((0, 0, 0))
         for i in range(len(centered_track)):
             p1 = centered_track[i]
             p2 = centered_track[(i + 1) % len(centered_track)]
@@ -126,13 +147,25 @@ def main():
             r2 = inflated_track[(i + 1) % len(inflated_track)]
 
             if line_intersection(line_start.rTuple(), line_end.rTuple(), p1.rTuple(), p2.rTuple()):
-                line_color = (0, 255, 0)  # Collision with centered track
+                line_color = (0, 255, 0)                                                                                # Collision with centered track
+                intersect_point = find_point(line_start.rTuple(), line_end.rTuple(), p1.rTuple(), p2.rTuple())
+                
+                if intersect_point:                                                                                     # Check if intersect_point is not None
+                    pygame.draw.rect(screen, (255, 255, 255), (intersect_point.x, intersect_point.y, 15, 15))
+                    print(f"Point of Intersection [x:{intersect_point.x} , y:{intersect_point.y}]")
                 break
+            
             elif line_intersection(line_start.rTuple(), line_end.rTuple(), r1.rTuple(), r2.rTuple()):
-                line_color = (255, 0,0 )  # Collision with inflated track
+                line_color = (255, 0, 0)                                                                                # Collision with inflated track
+                intersect_point = find_point(line_start.rTuple(), line_end.rTuple(), r1.rTuple(), r2.rTuple())
+                
+                if intersect_point:                                                                                     # Check if intersect_point is not None
+                    pygame.draw.rect(screen, (255, 255, 255), (intersect_point.x,intersect_point.y, 15, 15))
+                    print(f"Point [x:{intersect_point.x} , y:{intersect_point.y}]")
+                    #print(f"{line_start.x,line_start.y}")
+                
                 break
 
-        screen.fill((0, 0, 0))
         pygame.draw.line(screen, line_color, (line_start.x, line_start.y), (line_end.x, line_end.y), 5)
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
