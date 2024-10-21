@@ -226,9 +226,9 @@ class Car(phy.RigidBody2D):
         screen.blit(rotated_image, new_rect.topleft)
 
 
-    def debugDraw(self, screen, reward = 0, Obs = 0):
+    def debugDraw(self, screen, reward = 0, Obs = 0, fps = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward }", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"FPS: {int(fps) } Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward }", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10)) 
 
         te = ""

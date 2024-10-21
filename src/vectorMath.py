@@ -69,10 +69,12 @@ class Vector2:
         
         cos_theta = dot_product / (mag_self * mag_other)
         
-        if(cos_theta > 1):
+        if(cos_theta >= 1):
             cos_theta = 1
+        angle_deg = 0
+        angle_rad = math.acos(cos_theta)
+        angle_deg = angle_deg if (angle_deg < 1 and angle_deg > -1) else 0
 
-        angle_rad = math.acos(cos_theta)  
         angle_deg = math.degrees(angle_rad) 
         
         return angle_deg
