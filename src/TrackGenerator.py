@@ -7,7 +7,7 @@ import vectorMath as VM
 
 WIDTH, HEIGHT = 1920, 1080
 N_CELLS = 50
-TRACK_INFLATE = 80
+TRACK_INFLATE = 100
 FPS = 60
 TRACK_SCALE = 0.75  # Scale factor to reduce track size
 
@@ -82,14 +82,14 @@ def line_intersection(p1, p2, q1, q2):                                       # T
     def ccw(A, B, C):
         return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
     
-    return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2))) 
+    return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2)))          #gaus sedal
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     track_gen = TrackGenerator()
-    line_start = VM.Vector2(300, 100)
+    line_start = VM.Vector2(300, 200)
     line_end = VM.Vector2(20, 100)
     line_speed = 5
     running = True

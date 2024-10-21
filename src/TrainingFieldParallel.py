@@ -4,7 +4,7 @@ import logging
 import torch
 from stable_baselines3.common.vec_env import SubprocVecEnv
 import os
-from model import Lilach, LilachV2 
+from model import LilachV2 
 
 from datetime import datetime
 
@@ -41,31 +41,35 @@ if __name__ == '__main__':
     n_agents = 20
     env = SubprocVecEnv([make_env() for _ in range(n_agents)])
     
+    
     model_path = r'data\model\LilachV4-1.zip'
     if os.path.isfile(model_path):
-        model = PPO.load(model_path, env = env, verbose=1, device="cuda",
-                          learning_rate = 0.0001,
-                          batch_size=256,
-                          n_steps=4096,
-                          clip_range=0.05,
-                          ent_coef=0.001,
-                          gae_lambda=0.99,
-                          n_epochs=30,
-                          max_grad_norm=0.1,
-                          policy_kwargs = dict(net_arch=[64, 32, 16])
-                          )
+        print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
+        model = PPO.load(model_path, env = env, verbose=2, device="cuda",
+                            learning_rate = 0.001,
+                            batch_size=256,
+                            n_steps=4096,
+                            clip_range=0.2,
+                            ent_coef=0.1,   
+                            gae_lambda=0.65,
+                            gamma=0.975,
+                            n_epochs=20,
+                            max_grad_norm=0.5,
+                            policy_kwargs = dict(net_arch=[128, 128, 64])
+                    )
     else:
-        model = PPO("MlpPolicy", env=env, verbose=1, device="cuda",
-                          learning_rate = 0.0001,
-                          batch_size=256,
-                          n_steps=4096,
-                          clip_range=0.05,
-                          ent_coef=0.001,
-                          gae_lambda=0.99,
-                          n_epochs=30,
-                          max_grad_norm=0.1,
-                          policy_kwargs = dict(net_arch=[64, 32, 16])
-                          )
+        model = PPO("MlpPolicy", env = env, verbose=2, device="cuda",
+                            learning_rate = 0.001,
+                            batch_size=256,
+                            n_steps=4096,
+                            clip_range=0.2,
+                            ent_coef=0.1,   
+                            gae_lambda=0.65,
+                            gamma=0.975,
+                            n_epochs=20,
+                            max_grad_norm=0.5,
+                            policy_kwargs = dict(net_arch=[128, 128, 64])
+                    )
         print("Loaded new model.")
     env.reset()
     
@@ -84,7 +88,7 @@ if __name__ == '__main__':
     clip_range=0.2,
     max_grad_norm=0.5,
     verbose=1)"""
-    total_timesteps_per_episode = 200000  # Set timesteps per episode as needed
+    total_timesteps_per_episode = 1000000  # Set timesteps per episode as needed
     num_episodes = 1
 
     for episode in range(num_episodes):
