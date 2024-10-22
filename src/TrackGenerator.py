@@ -79,7 +79,7 @@ def generateTrack(inflate_ratio = TRACK_INFLATE):
     current_track = track_gen.generate_track()
     centered_track = center_polygon(current_track)
     inflated_track = inflate_polygon(centered_track, inflate_ratio)
-    return convert_to_VM(centered_track,inflated_track) 
+    return convert_to_VM(centered_track,inflated_track)     
 
 def line_intersection(p1, p2, q1, q2):                                       # True if line intersects
     def ccw(A, B, C):
@@ -91,14 +91,21 @@ def line_intersection(p1, p2, q1, q2):                                       # T
 
 
 pointMass = VM.Vector2(300, 100)
-Car1 = Car(VM.Vector2(200, 540))
 def main():
+    Car1 = Car(VM.Vector2(200, 540))
     pygame.init()
     rotationAA = 0
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     track_gen = TrackGenerator()
-    line = ray.RayCast(VM.Vector2(300, 100),-90,100)
+    lines = []
+    angle = 0
+    for i in range(8):
+        line = ray.RayCast(VM.Vector2(300, 100), angle,200)
+        lines.append(line)
+        angle+=(360/8)
+
+
 
     line_end = VM.Vector2(20, 100)
     line_speed = 5
@@ -141,16 +148,21 @@ def main():
         
 
         screen.fill((150, 150, 150))
-        line.Update(Car1.position, Car1.rotation,0.016)
-        intersection = line.Collision([centered_track,inflated_track])
-        line.Draw(screen, intersection)
+        
+        for line in lines:
+            line.Update(Car1.position, Car1.rotation,0.016)
+            intersection = line.Collision([centered_track,inflated_track])
+            line.Draw(screen, intersection)
+            if intersection:
+                dist = (Car1.position - intersection).magnitude()
+                if(dist < 15):
+                    Car1 = Car(VM.Vector2(200, 540))
         Car1.Draw(screen)
 
 
         line_color = (255, 255, 255)  # Default line color
 
 
-        pygame.draw.line(screen, line_color, (line.Start.x, line.Start.y), (line.End.x, line.End.y), 5)
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
 

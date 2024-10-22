@@ -38,11 +38,17 @@ class RayCast:
         return False
             
     def Draw(self, screen, intersection):
+        pygame.draw.line(screen, (0, 0, 0), (self.Start.x, self.Start.y), (self.End.x, self.End.y), 2)
+
         pygame.draw.circle(screen,(0,255,0),(self.Start.x, self.Start.y),10)
         if intersection:
+            #pygame.draw.line(screen, (0, 0, 0), (self.Start.x, self.Start.y), (intersection.x, intersection.y), 2)
+
             line_color = (255,0,0)
             pygame.draw.circle(screen,(255,255,0),(intersection.x,intersection.y),10)
-
+        else:
+            #pygame.draw.line(screen, (0, 0, 0), (self.Start.x, self.Start.y), (self.End.x, self.End.y), 2)
+            pass
 
 
 
