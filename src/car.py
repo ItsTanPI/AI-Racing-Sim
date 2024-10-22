@@ -208,7 +208,7 @@ class Car(phy.RigidBody2D):
     
 
     def Draw(self, screen):
-        image =     pygame.image.load('D:\Visual Studio\Racing Sim\AI-Racing-Sim\assets\Cars\Red.png')
+        image = pygame.image.load(r'assets\Cars\Red.png')
         vertices = self.findVertices()
         points = [(int(v.x), int(v.y)) for v in vertices]
 
