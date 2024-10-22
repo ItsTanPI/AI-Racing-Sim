@@ -98,10 +98,10 @@ class Vector2:
 
 
     def __repr__(self):
-        return f"Vector2({self.x:5.1}, {self.y:5.1})"
+        return f"VM.Vector2({self.x}, {self.y})"
 
     def __str__(self):
-        return f"Vector2({self.x:5.1}, {self.y:5.1})"
+        return f"VM.Vector2({self.x}, {self.y})"
     
     def rTuple(self):
         return (self.x,self.y)
