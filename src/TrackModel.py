@@ -210,3 +210,5 @@ class Decan(gym.Env):
 
     def Name(self):
         return "Decan"
+    
+    #Decan
