@@ -42,7 +42,7 @@ if __name__ == '__main__':
     env = SubprocVecEnv([make_env() for _ in range(n_agents)])
     
     
-    model_path = r'data\model\Decan.zip'
+    model_path = r'data\model\DecanDrift-New.zip'
     if os.path.isfile(model_path):
         print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
         model = PPO.load(model_path, env = env, verbose=2, device="cuda",
@@ -50,7 +50,7 @@ if __name__ == '__main__':
                             batch_size=256,
                             n_steps=4096,
                             clip_range=0.2,
-                            ent_coef=0.1,   
+                            ent_coef=0.5,   
                             gae_lambda=0.65,
                             gamma=0.975,
                             n_epochs=20,
@@ -88,18 +88,18 @@ if __name__ == '__main__':
     clip_range=0.2,
     max_grad_norm=0.5,
     verbose=1)"""
-    total_timesteps_per_episode = 2000000  # Set timesteps per episode as needed
+    total_timesteps_per_episode = 5000000  # Set timesteps per episode as needed
     num_episodes = 1
 
     for episode in range(num_episodes):
         print(f"Starting episode {episode + 1}/{num_episodes}")
         model.learn(total_timesteps=total_timesteps_per_episode)    
-        model.save(fr'data\model\Decan.zip')
+        model.save(fr'data\model\DecanDrift-New.zip')
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        message = (f"Model saved as Decan.zip "
-                   f"for episode Decan with {total_timesteps_per_episode} steps "
+        message = (f"Model saved as DecanDrift-New.zip "
+                   f"for episode DecanDrift-New with {total_timesteps_per_episode} steps "
                    f"at {current_time}")
         
         print(message)

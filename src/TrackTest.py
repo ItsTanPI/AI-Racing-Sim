@@ -22,7 +22,7 @@ def print_hyperparameters(model):
     print("Device (CPU or GPU):", model.device)
     print("=============================")
 
-model_path = r'data\model\\Decan.zip'
+model_path = r'data\model\DecanDrift-New.zip'
 if os.path.isfile(model_path):
     print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
     model = PPO.load(model_path, env = env, verbose=2, device="cuda",
@@ -30,7 +30,7 @@ if os.path.isfile(model_path):
                     )
     print_hyperparameters(model)
     
-    model = model.policy
+    #model = model.policy
     print("Loaded existing model.")
 else:
     model = PPO("MlpPolicy", env, verbose=1, device="cuda", policy_kwargs = dict(net_arch=[256, 256, 128]))
@@ -83,7 +83,6 @@ while True:
     obs, reward, done, truncated, info = env.step(action, type)
     env.render(reward, obs, fps=fps)
 
-    #log_data(log_path, obs, action, reward, info)
 
     if done:
         obs, info = env.reset()

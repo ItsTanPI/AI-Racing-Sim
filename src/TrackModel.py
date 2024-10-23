@@ -127,7 +127,7 @@ class Decan(gym.Env):
         else:
             CarVelocity *= +1
 
-        CarVelocity /= Car.MaxSpeed
+        CarVelocity /= 456#Car.MaxSpeed
 
         if(self.car.steerAngle > 270):
             CarSteer = self.car.steerAngle - 360
@@ -158,14 +158,7 @@ class Decan(gym.Env):
 
         Reward = 0
         Reward += self.car.velocity.magnitude()//10
-        self.CarRay.Update(self.car.position, self.car.rotation, 0.016)
-        
-        for i in range(len(self.CollisionInt)):
-            if self.CollisionInt[i]:
-                dist = ((self.CollisionInt[i] - self.car.position).magnitude())/(self.RayCast[i].Distance)
-                if dist < 0.3:
-                    Reward -= 5
-        
+        self.CarRay.Update(self.car.position, self.car.rotation, 0.016)        
         
         for i in range(len(self.Checkpoints)):
             s, e, b = self.Checkpoints[i]
@@ -178,10 +171,6 @@ class Decan(gym.Env):
                     new = (i+1)%len(self.Checkpoints)
                     self.Checkpoints[new][2] = True
 
-
-        
-                
-                
 
         return Reward
 
