@@ -2,9 +2,9 @@ from stable_baselines3 import PPO, A2C
 import pygame
 import os
 import sys
-from model import LilachV2
-
-env = LilachV2()
+from TrackModel import Decan
+6
+env = Decan()
 
 def print_hyperparameters(model):
     print("==== PPO Hyperparameters ====")
@@ -22,20 +22,21 @@ def print_hyperparameters(model):
     print("Device (CPU or GPU):", model.device)
     print("=============================")
 
-model_path = r'data\model\\LilachV4-allNight.zip'
+model_path = r'data\model\DecanDrift-New.zip'
 if os.path.isfile(model_path):
     print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
     model = PPO.load(model_path, env = env, verbose=2, device="cuda",
-                            policy_kwargs = dict(net_arch=[128, 128, 64])
+                            policy_kwargs = dict(net_arch=[256, 256, 128])
                     )
-                          
+    print_hyperparameters(model)
+    
+    model = model.policy
     print("Loaded existing model.")
 else:
-    model = PPO("MlpPolicy", env, verbose=1, device="cuda")
+    model = PPO("MlpPolicy", env, verbose=1, device="cuda", policy_kwargs = dict(net_arch=[256, 256, 128]))
     print("Loaded new model.")
 
 
-print_hyperparameters(model)
 """model = PPO(
     'MlpPolicy',
     env,
@@ -55,6 +56,7 @@ screen = pygame.display.set_mode((1920, 1080))
 env.screenNow(screen)
 clock = pygame.time.Clock()
 type = "A"
+m = "Normal"
 while True:
     fps = clock.get_fps()
     fps_text = font.render(f'FPS: {int(fps)}', True, (0, 0, 0))
@@ -69,6 +71,9 @@ while True:
         if event.type == pygame.KEYDOWN:  
             if event.key == pygame.K_r:
                 env.reset()
+            if event.key == pygame.K_SPACE:
+                env.NewTrack()
+                env.reset()
             if event.key == pygame.K_t:
                 if type == "A":
                     type = "H"
@@ -76,13 +81,19 @@ while True:
                     type = "A"
                 else:   
                     type = "A"
+            if event.key == pygame.K_f:
+                if m == "Debug":
+                    m = "Normal"
+                elif (m == "Normal"):
+                    m = "Debug"
+                else:   
+                    m = "Normal"
 
 
-    action, _states = model.predict(obs)
+    action = model.predict(obs)
     obs, reward, done, truncated, info = env.step(action, type)
-    env.render(reward, obs, fps=fps)
+    env.render(reward, obs, fps=fps, mode = m)
 
-    #log_data(log_path, obs, action, reward, info)
 
     if done:
         obs, info = env.reset()

@@ -4,6 +4,7 @@ import random
 import vectorMath as VM
 import Raycast as ray
 from car import Car
+import math
 # from vectorMath import line_intersection 
 
 
@@ -87,7 +88,18 @@ def line_intersection(p1, p2, q1, q2):                                       # T
     
     return ((ccw(p1, q1, q2) != ccw(p2, q1, q2) )and (ccw(p1, p2, q1) != ccw(p1, p2, q2)))
 
+def GoToCenter(p1, p2, p3, p4):
+    
+    center_x = (p1.x + p2.x + p3.x + p4.x) / 4
+    center_y = (p1.y + p2.y + p3.y + p4.y) / 4
+    
+    return VM.Vector2(center_x, center_y)
 
+def Angle(p1, p2):
+    delta_x = p2.x - p1.x
+    delta_y = p2.y - p1.y
+    angle = math.atan2(delta_y, delta_x)
+    return math.degrees(angle) + 90 
 
 
 pointMass = VM.Vector2(300, 100)
@@ -111,7 +123,7 @@ def main():
     line_speed = 5
     running = True 
     centered_track, inflated_track = ( [VM.Vector2(372.97078673872534, 598.7614370922374), VM.Vector2(422.10196697998197, 364.92408757601424), VM.Vector2(492.1517570782935, 198.09479774849905), VM.Vector2(657.9471713018057, 155.86112881208453), VM.Vector2(955.4317609547857, 149.42277455560037), VM.Vector2(1200.528786825163, 152.90208448232596), VM.Vector2(1589.4624902306825, 211.08240636809506), VM.Vector2(1735.350121743476, 385.44082000777473), VM.Vector2(1719.5180346051184, 794.7202468053138), VM.Vector2(1540.0135284346643, 868.1490329773305), VM.Vector2(1373.3699274007356, 891.7593650699018), VM.Vector2(891.7062111115587, 910.3051205331303), VM.Vector2(597.4917991716743, 919.5417975454379), VM.Vector2(477.0486436218857, 876.2748767009373), VM.Vector2(374.90701380144986, 622.7600237253167)] ,  [VM.Vector2(223.71668198617283, 613.7017253931398), VM.Vector2(279.46706259378334, 318.49905068060633), VM.Vector2(371.0450743245858, 109.58959229484904), VM.Vector2(565.2304014384641, 37.94759868891272), VM.Vector2(953.6774625803093, -0.5669665509610127), VM.Vector2(1279.6952473586157, 25.494582636456315), VM.Vector2(1722.4066772033157, 141.61411755812412), VM.Vector2(1882.4558323297715, 356.11659942305954), VM.Vector2(1861.7333583744605, 842.4151279266795), VM.Vector2(1670.56754193433, 942.0114020100737), VM.Vector2(1487.6069502385656, 988.9699746408181), VM.Vector2(864.5011452227405, 1057.8174399847105), VM.Vector2(493.88779642865734, 1028.013962710631), VM.Vector2(353.94976298765107, 961.9875687984235), VM.Vector2(226.3854237048119, 643.7680525516072)] )
-
+    
 
     while running:
         for event in pygame.event.get():
@@ -165,6 +177,10 @@ def main():
 
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
+
+        for i in range(len(centered_track)):
+           pygame.draw.line(screen, (0, 0, 255), (inflated_track[i].x, inflated_track[i].y), (centered_track[i].x, centered_track[i].y), 2)
+
 
         pygame.display.flip()
         clock.tick(FPS)

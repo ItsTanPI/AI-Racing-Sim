@@ -61,16 +61,16 @@ class LilachV2(gym.Env):
 
     def reset(self, seed=None, options=None):
         self.steps = 0
-        #self.car = car.Car(VM.Vector2(960, 540), VM.Vector2(30, 100))
-        self.car = car.Car(VM.Vector2(random.randint(150, 1800), random.randint(150, 850)))
+        self.car = car.Car(VM.Vector2(960, 540), VM.Vector2(30, 100))
+        #self.car = car.Car(VM.Vector2(random.randint(150, 1800), random.randint(150, 850)))
         self.car.rotation = random.randint(0, 360) 
-        distance = 300
-        self.rangle =random.randint(-90, 90)
+        distance = 200
+        self.rangle =random.randint(-25, 25)
         x = distance * math.cos(math.radians(self.car.rotation - 90 + self.rangle))
         y = distance * math.sin(math.radians(self.car.rotation - 90 + self.rangle))
-        #self.target_point = VM.Vector2(960 + x, 540 + y)
+        self.target_point = VM.Vector2(960 + x, 540 + y)
 
-        self.target_point = VM.Vector2(random.randint(150, 1800), random.randint(150, 850))
+        #self.target_point = VM.Vector2(random.randint(150, 1800), random.randint(150, 850))
         self.distance = (self.car.position - self.target_point).magnitude()
         self.prev_distance = self.distance 
         self.prev_rpm = 0  
@@ -176,7 +176,7 @@ class LilachV2(gym.Env):
         SteerReward = 0 
         if (localVector.y < 0):
             
-            if (AllignmentReward >= 17):
+            if (AllignmentReward >= 35):
                 AllignmentReward += 75
             elif localVector.x <= 0 and stangle > 0:
                 SteerReward -= 50
@@ -205,7 +205,7 @@ class LilachV2(gym.Env):
             else:
                 SteerReward -= 50
         
-        Reward = (SteerReward + AllignmentReward + (SpeedReward) + distanceReward)           
+        Reward = (SteerReward+ AllignmentReward) #+ (SpeedReward) + distanceReward)           
         
         if self.steps > 750 or distance > 2000:
             print(f"\nFailed,({self.steps}, Angle: {self.rangle}, Reward: {Reward/10})")
