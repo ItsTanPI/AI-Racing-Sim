@@ -166,6 +166,10 @@ def main():
         pygame.draw.polygon(screen, (0, 255, 0), [(v.x, v.y) for v in centered_track], 3)
         pygame.draw.polygon(screen, (255, 0, 0), [(v.x, v.y) for v in inflated_track], 3)
 
+        for i in range(len(centered_track)):
+           pygame.draw.line(screen, (0, 0, 255), (inflated_track[i].x, inflated_track[i].y), (centered_track[i].x, centered_track[i].y), 2)
+
+
         pygame.display.flip()
         clock.tick(FPS)
 

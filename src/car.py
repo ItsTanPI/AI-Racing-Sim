@@ -79,7 +79,7 @@ class Car(phy.RigidBody2D):
 
         velocity = VM.Vector2()
 
-        d = 50 if (self.velocity.magnitude() < 320) else (20 if (self.velocity.magnitude() < 340) else 3)
+        d = 40 if (self.velocity.magnitude() < 320) else (20 if (self.velocity.magnitude() < 340) else 5)
         self.fac = VM.Lerp(self.fac, d, 3* dt)
 
         velocity += (accleration * dt)*self.velocity.magnitude() * (1/ self.fac)
@@ -134,7 +134,7 @@ class Car(phy.RigidBody2D):
             self.applyDrift(78, dt)
 
 
-    def handleAIInput(self, dt, throttle, steer, brake = False, reverse_gear = False, gear= 1):
+    def handleAIInput(self, dt, throttle, steer, brake = False, reverse_gear = False, gear= 2):
         """
         Handles car input controlled by an AI.
 
@@ -208,7 +208,7 @@ class Car(phy.RigidBody2D):
     
 
     def Draw(self, screen):
-        image =     pygame.image.load('D:\Visual Studio\Racing Sim\AI-Racing-Sim\assets\Cars\Red.png')
+        image =     pygame.image.load(r'assets\Cars\Red.png')
         vertices = self.findVertices()
         points = [(int(v.x), int(v.y)) for v in vertices]
 
@@ -228,7 +228,7 @@ class Car(phy.RigidBody2D):
 
     def debugDraw(self, screen, reward = 0, Obs = 0, fps = 0):
         font = pygame.font.SysFont('Arial', 30)
-        text_surface = font.render(f"FPS: {int(fps) } Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward }", True, (0, 0, 0))  # Render the text
+        text_surface = font.render(f"FPS: {int(fps) } Speed: {self.velocity.magnitude() :5.1f} RPM: {self.CurRPM :5.0f}  Rotation: {int(self.rotation)} reward: {reward },", True, (0, 0, 0))  # Render the text
         screen.blit(text_surface, (10, 10)) 
 
         te = ""

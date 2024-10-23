@@ -40,7 +40,7 @@ class RayCast:
     def Draw(self, screen, intersection):
         pygame.draw.line(screen, (0, 0, 0), (self.Start.x, self.Start.y), (self.End.x, self.End.y), 2)
 
-        pygame.draw.circle(screen,(0,255,0),(self.Start.x, self.Start.y),10)
+        #pygame.draw.circle(screen,(0,255,0),(self.Start.x, self.Start.y),10)
         if intersection:
             #pygame.draw.line(screen, (0, 0, 0), (self.Start.x, self.Start.y), (intersection.x, intersection.y), 2)
 
@@ -52,7 +52,7 @@ class RayCast:
 
 
 
-def line_intersection(p1, p2, q1, q2):                                       
+def line_intersection(p1, p2, q1, q2): #Tuple
     def ccw(A, B, C):
         return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
 
