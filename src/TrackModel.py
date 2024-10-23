@@ -6,7 +6,7 @@ import random
 import gymnasium as gym
 import math
 import Raycast as ray
-
+import TrackGenerator
 
 class Decan(gym.Env):
     def __init__(self):
@@ -90,7 +90,7 @@ class Decan(gym.Env):
         for i in range(len(self.CollisionInt)):
             if self.CollisionInt[i]:
                 dist = ((self.CollisionInt[i] - self.car.position).magnitude())
-                if dist < 10:
+                if dist < 5:
                     done = True
                     reward -= 50
                     print("Failed")
@@ -105,11 +105,18 @@ class Decan(gym.Env):
         return obs, reward, done, truncated, { "Action": action}
 
     def reset(self, seed=None, options=None):
-        self.car = car.Car(VM.Vector2(315, 540), VM.Vector2(30, 100))
+
+        c = TrackGenerator.GoToCenter(self.centered_track[0], self.centered_track[1], self.inflated_track[0], self.inflated_track[1])
+
+        self.car = car.Car(c, VM.Vector2(30, 100))
+        self.car.rotation = TrackGenerator.Angle(self.centered_track[0], self.centered_track[1])
         self.Checkpoints = [[self.centered_track[i], self.inflated_track[i], False] for i in range(len(self.centered_track))]
         self.Checkpoints[1][2] = True
 
         return self._get_observation(), {}
+    
+    def NewTrack(self):
+        self.centered_track, self.inflated_track = TrackGenerator.generateTrack()
 
     def _get_observation(self):
         
@@ -127,7 +134,7 @@ class Decan(gym.Env):
         else:
             CarVelocity *= +1
 
-        CarVelocity /= Car.MaxSpeed
+        CarVelocity /= 456#Car.MaxSpeed
 
         if(self.car.steerAngle > 270):
             CarSteer = self.car.steerAngle - 360
@@ -158,14 +165,7 @@ class Decan(gym.Env):
 
         Reward = 0
         Reward += self.car.velocity.magnitude()//10
-        self.CarRay.Update(self.car.position, self.car.rotation, 0.016)
-        
-        for i in range(len(self.CollisionInt)):
-            if self.CollisionInt[i]:
-                dist = ((self.CollisionInt[i] - self.car.position).magnitude())/(self.RayCast[i].Distance)
-                if dist < 0.3:
-                    Reward -= 5
-        
+        self.CarRay.Update(self.car.position, self.car.rotation, 0.016)        
         
         for i in range(len(self.Checkpoints)):
             s, e, b = self.Checkpoints[i]
@@ -179,10 +179,6 @@ class Decan(gym.Env):
                     self.Checkpoints[new][2] = True
 
 
-        
-                
-                
-
         return Reward
 
     def screenNow(self, screen):
@@ -190,20 +186,22 @@ class Decan(gym.Env):
 
     def render(self, reward, Obs,fps = 0, mode='human'):
         self.screen.fill((255, 255, 255))
-        self.car.Draw(self.screen)
-        #self.car.debugDraw(self.screen, reward, Obs, fps)
 
         pygame.draw.polygon(self.screen, (0, 255, 0), [(v.x, v.y) for v in self.centered_track], 3)
         pygame.draw.polygon(self.screen, (255, 0, 0), [(v.x, v.y) for v in self.inflated_track], 3)
+        
+        self.car.Draw(self.screen)
+        if(mode == "Debug"):
+            for i in range(len(self.Checkpoints)):
+                s, e, b = self.Checkpoints[i]
+                if b:
+                    pygame.draw.line(self.screen, (0, 0, 255), (s.x, s.y), (e.x, e.y), 2)
 
-        for i in range(len(self.Checkpoints)):
-            s, e, b = self.Checkpoints[i]
-            if b:
-                pass#pygame.draw.line(self.screen, (0, 0, 255), (s.x, s.y), (e.x, e.y), 2)
 
-
-        for i in range(len(self.RayCast)):
-            pass#self.RayCast[i].Draw(self.screen, self.CollisionInt[i])
+            for i in range(len(self.RayCast)):
+                self.RayCast[i].Draw(self.screen, self.CollisionInt[i])
+        
+            self.car.debugDraw(self.screen, reward, Obs, fps)
         
         pygame.display.flip()
 

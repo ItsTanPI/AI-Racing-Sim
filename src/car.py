@@ -79,7 +79,7 @@ class Car(phy.RigidBody2D):
 
         velocity = VM.Vector2()
 
-        d = 40 if (self.velocity.magnitude() < 320) else (20 if (self.velocity.magnitude() < 340) else 5)
+        d = 40 if (self.velocity.magnitude() < 320) else (20 if (self.velocity.magnitude() < 340) else 4)
         self.fac = VM.Lerp(self.fac, d, 3* dt)
 
         velocity += (accleration * dt)*self.velocity.magnitude() * (1/ self.fac)

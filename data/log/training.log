@@ -752,3 +752,6 @@ INFO:root:Model saved as LilachV4-allNight.zip for episode allNight with 200000 
 INFO:root:Model saved as LilachV4-allNight.zip for episode allNight with 200000 steps at 2024-10-22 10:28:58
 INFO:root:Model saved as Decan.zip for episode Decan with 200000 steps at 2024-10-23 11:17:02
 INFO:root:Model saved as Decan.zip for episode Decan with 2000000 steps at 2024-10-23 12:15:40
+INFO:root:Model saved as Decan.zip for episode DecanDrift with 5000000 steps at 2024-10-23 15:46:27
+INFO:root:Model saved as Decan.zip for episode DecanDrift with 100000 steps at 2024-10-23 16:39:21
+INFO:root:Model saved as DecanDrift-New.zip for episode DecanDrift-New with 5000000 steps at 2024-10-23 19:10:59
