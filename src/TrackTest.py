@@ -70,6 +70,9 @@ while True:
         if event.type == pygame.KEYDOWN:  
             if event.key == pygame.K_r:
                 env.reset()
+            if event.key == pygame.K_SPACE:
+                env.NewTrack()
+                env.reset()
             if event.key == pygame.K_t:
                 if type == "A":
                     type = "H"
