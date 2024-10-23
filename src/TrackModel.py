@@ -186,21 +186,22 @@ class Decan(gym.Env):
 
     def render(self, reward, Obs,fps = 0, mode='human'):
         self.screen.fill((255, 255, 255))
-        #self.car.debugDraw(self.screen, reward, Obs, fps)
 
         pygame.draw.polygon(self.screen, (0, 255, 0), [(v.x, v.y) for v in self.centered_track], 3)
         pygame.draw.polygon(self.screen, (255, 0, 0), [(v.x, v.y) for v in self.inflated_track], 3)
-
-        for i in range(len(self.Checkpoints)):
-            s, e, b = self.Checkpoints[i]
-            if b:
-                pass#pygame.draw.line(self.screen, (0, 0, 255), (s.x, s.y), (e.x, e.y), 2)
-
-
-        for i in range(len(self.RayCast)):
-            pass#self.RayCast[i].Draw(self.screen, self.CollisionInt[i])
         
         self.car.Draw(self.screen)
+        if(mode == "Debug"):
+            for i in range(len(self.Checkpoints)):
+                s, e, b = self.Checkpoints[i]
+                if b:
+                    pygame.draw.line(self.screen, (0, 0, 255), (s.x, s.y), (e.x, e.y), 2)
+
+
+            for i in range(len(self.RayCast)):
+                self.RayCast[i].Draw(self.screen, self.CollisionInt[i])
+        
+            self.car.debugDraw(self.screen, reward, Obs, fps)
         
         pygame.display.flip()
 

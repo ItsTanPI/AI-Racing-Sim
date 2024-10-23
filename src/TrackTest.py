@@ -30,7 +30,7 @@ if os.path.isfile(model_path):
                     )
     print_hyperparameters(model)
     
-    #model = model.policy
+    model = model.policy
     print("Loaded existing model.")
 else:
     model = PPO("MlpPolicy", env, verbose=1, device="cuda", policy_kwargs = dict(net_arch=[256, 256, 128]))
@@ -56,6 +56,7 @@ screen = pygame.display.set_mode((1920, 1080))
 env.screenNow(screen)
 clock = pygame.time.Clock()
 type = "A"
+m = "Normal"
 while True:
     fps = clock.get_fps()
     fps_text = font.render(f'FPS: {int(fps)}', True, (0, 0, 0))
@@ -80,11 +81,18 @@ while True:
                     type = "A"
                 else:   
                     type = "A"
+            if event.key == pygame.K_f:
+                if m == "Debug":
+                    m = "Normal"
+                elif (m == "Normal"):
+                    m = "Debug"
+                else:   
+                    m = "Normal"
 
 
     action = model.predict(obs)
     obs, reward, done, truncated, info = env.step(action, type)
-    env.render(reward, obs, fps=fps)
+    env.render(reward, obs, fps=fps, mode = m)
 
 
     if done:
