@@ -185,10 +185,10 @@ class Decan(gym.Env):
         self.screen = screen    
 
     def render(self, reward, Obs,fps = 0, mode='human'):
-        self.screen.fill((255, 255, 255))
+        self.screen.fill((179, 114, 68))
 
-        pygame.draw.polygon(self.screen, (0, 255, 0), [(v.x, v.y) for v in self.centered_track], 3)
-        pygame.draw.polygon(self.screen, (255, 0, 0), [(v.x, v.y) for v in self.inflated_track], 3)
+        pygame.draw.polygon(self.screen, (169, 169, 169), [(v.x, v.y) for v in self.inflated_track])
+        pygame.draw.polygon(self.screen, (76, 175, 80), [(v.x, v.y) for v in self.centered_track])
         
         self.car.Draw(self.screen)
         if(mode == "Debug"):
