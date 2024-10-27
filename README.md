@@ -9,6 +9,18 @@ Welcome to the **Car Racing AI Game** project! This project is built using Pytho
 - **Smooth Gameplay**: Built using Pygame, the game offers realistic car behavior and visual feedback.
 - **Customizable**: The project is open-source and easy to customize, making it suitable for further development and experimentation.
 
+## SneekPeek
+![Git_Post0](https://github.com/user-attachments/assets/71147bc1-91db-475a-9670-735baabb5b62)
+**Info**
+![Git_Post1](https://github.com/user-attachments/assets/ae07cac3-c647-41d9-b71a-8af8699b9e58)
+
+## Controls
+
+- **T**: Toggle between AI drive and manual drive
+- **F**: Display information tab
+- **SPACE**: Change to a new random track
+- **R**: Reset on the current track
+
 ## Prerequisites
 
 Before running the project, make sure you have the following libraries installed:
