@@ -42,33 +42,33 @@ if __name__ == '__main__':
     env = SubprocVecEnv([make_env() for _ in range(n_agents)])
     
     
-    model_path = r'data\model\DecanDrift-New.zip'
+    model_path = r'data\model\DecanDrift-S.zip'
     if os.path.isfile(model_path):
         print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
         model = PPO.load(model_path, env = env, verbose=2, device="cuda",
                             learning_rate = 0.001,
                             batch_size=256,
                             n_steps=4096,
-                            clip_range=0.2,
+                            clip_range=0.4,
                             ent_coef=0.5,   
-                            gae_lambda=0.65,
-                            gamma=0.975,
+                            gae_lambda=0.95,
+                            gamma=0.99,
                             n_epochs=20,
                             max_grad_norm=0.5,
-                            policy_kwargs = dict(net_arch=[256, 256, 128])
+                            policy_kwargs = dict(net_arch=[512, 412, 256])
                     )
     else:
         model = PPO("MlpPolicy", env = env, verbose=2, device="cuda",
                             learning_rate = 0.001,
                             batch_size=256,
                             n_steps=4096,
-                            clip_range=0.2,
-                            ent_coef=0.1,   
-                            gae_lambda=0.65,
-                            gamma=0.975,
+                            clip_range=0.4,
+                            ent_coef=0.5,   
+                            gae_lambda=0.95,
+                            gamma=0.99,
                             n_epochs=20,
                             max_grad_norm=0.5,
-                            policy_kwargs = dict(net_arch=[256, 256, 128])
+                            policy_kwargs = dict(net_arch=[512, 412, 256])
                     )
         print("Loaded new model.")
     env.reset()
@@ -88,18 +88,18 @@ if __name__ == '__main__':
     clip_range=0.2,
     max_grad_norm=0.5,
     verbose=1)"""
-    total_timesteps_per_episode = 5000000  # Set timesteps per episode as needed
+    total_timesteps_per_episode = 10000000  
     num_episodes = 1
 
     for episode in range(num_episodes):
         print(f"Starting episode {episode + 1}/{num_episodes}")
         model.learn(total_timesteps=total_timesteps_per_episode)    
-        model.save(fr'data\model\DecanDrift-New.zip')
+        model.save(fr'data\model\DecanDrift-S.zip')
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        message = (f"Model saved as DecanDrift-New.zip "
-                   f"for episode DecanDrift-New with {total_timesteps_per_episode} steps "
+        message = (f"Model saved as DecanDrift-S.zip "
+                   f"for episode DecanDrift-S with {total_timesteps_per_episode} steps "
                    f"at {current_time}")
         
         print(message)

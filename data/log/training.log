@@ -755,3 +755,6 @@ INFO:root:Model saved as Decan.zip for episode Decan with 2000000 steps at 2024-
 INFO:root:Model saved as Decan.zip for episode DecanDrift with 5000000 steps at 2024-10-23 15:46:27
 INFO:root:Model saved as Decan.zip for episode DecanDrift with 100000 steps at 2024-10-23 16:39:21
 INFO:root:Model saved as DecanDrift-New.zip for episode DecanDrift-New with 5000000 steps at 2024-10-23 19:10:59
+INFO:root:Model saved as DecanDrift-New.zip for episode DecanDrift-New-1 with 500000 steps at 2024-10-24 19:30:12
+INFO:root:Model saved as DecanDrift-S.zip for episode DecanDrift-S with 5000000 steps at 2024-10-28 04:12:53
+INFO:root:Model saved as DecanDrift-S.zip for episode DecanDrift-S with 500000 steps at 2024-10-28 22:58:41

@@ -29,6 +29,9 @@ class RayCast:
             r1 = inflated_track[i]
             r2 = inflated_track[(i + 1) % len(inflated_track)]
 
+            if ((i + 1) % len(centered_track) == 0 and i == (len(centered_track)-1)):
+                return False
+
             if line_intersection(self.Start.rTuple(), self.End.rTuple(), p1.rTuple(), p2.rTuple()):                     # Collision with centered track
                 return find_point(self.Start.rTuple(), self.End.rTuple(), p1.rTuple(), p2.rTuple())    
             

@@ -22,18 +22,18 @@ def print_hyperparameters(model):
     print("Device (CPU or GPU):", model.device)
     print("=============================")
 
-model_path = r'data\model\DecanDrift-New.zip'
+model_path = r'data\model\DecanDrift-S.zip'
 if os.path.isfile(model_path):
     print("!!!!!!!!!!Loded Old!!!!!!!!!!!")
     model = PPO.load(model_path, env = env, verbose=2, device="cuda",
-                            policy_kwargs = dict(net_arch=[256, 256, 128])
+                            policy_kwargs = dict(net_arch=[512, 412, 256])
                     )
     print_hyperparameters(model)
     
-    model = model.policy
+    #model = model.policy
     print("Loaded existing model.")
 else:
-    model = PPO("MlpPolicy", env, verbose=1, device="cuda", policy_kwargs = dict(net_arch=[256, 256, 128]))
+    model = PPO("MlpPolicy", env, verbose=1, device="cuda", policy_kwargs = dict(net_arch=[512, 412, 256]))
     print("Loaded new model.")
 
 
@@ -73,6 +73,9 @@ while True:
                 env.reset()
             if event.key == pygame.K_SPACE:
                 env.NewTrack()
+                env.reset()
+            if event.key == pygame.K_g:
+                env.OldTrack()
                 env.reset()
             if event.key == pygame.K_t:
                 if type == "A":

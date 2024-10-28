@@ -94,6 +94,7 @@ class Car(phy.RigidBody2D):
             self.gear = 2
         if (keys[pygame.K_q]):
             self.gear = 1
+        self.gear = 2
         if ((keys[pygame.K_s] or keys[pygame.K_DOWN]) or (keys[pygame.K_w] or keys[pygame.K_UP]) and (not keys[pygame.K_SPACE])):
             if keys[pygame.K_s] or keys[pygame.K_DOWN]: # reverse Gear
                 if self.velocity.magnitude() < self.MaxSpeed - 50:
