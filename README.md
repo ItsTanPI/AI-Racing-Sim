@@ -10,6 +10,7 @@ Welcome to the **Car Racing AI Game** project! This project is built using Pytho
 - **Customizable**: The project is open-source and easy to customize, making it suitable for further development and experimentation.
 
 ## SneekPeek
+https://github.com/user-attachments/assets/691faa35-fb5c-4b89-a932-afcaba1603ce
 ![Git_Post0](https://github.com/user-attachments/assets/71147bc1-91db-475a-9670-735baabb5b62)
 **Info**
 ![Git_Post1](https://github.com/user-attachments/assets/ae07cac3-c647-41d9-b71a-8af8699b9e58)
